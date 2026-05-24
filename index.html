@@ -1523,12 +1523,6 @@
     const STORAGE_KEY = "werewolf-live-recorder-v1";
     const SAVED_GAMES_KEY = "werewolf-live-recorder-saves-v1";
 
-    const roles = [
-      "未标", "好人", "民", "狼", "预言家", "女巫", "猎人", "守卫", "白痴", "骑士",
-      "通灵师", "机械狼", "狼王", "狼美人", "石像鬼", "怪盗狼王", "摄梦人", "魔术师",
-      "守墓人", "侦探", "警犬", "丘比特", "盗贼", "野孩子", "咒狐", "三方", "其他"
-    ];
-
     const factionLabels = {
       wolf: "狼",
       god: "神",
@@ -1842,6 +1836,7 @@
         pendingTags: Array.isArray(parsed.pendingTags) ? parsed.pendingTags : []
       };
       gameState.selectedSeat = Math.min(Math.max(Number(gameState.selectedSeat) || 1, 1), seatCount);
+      normalizePlayerRolesForBoard(gameState);
       return gameState;
     }
 
@@ -2604,12 +2599,36 @@
       return note.phase === "警上" || String(note.phase || "").includes("白天");
     }
 
+    function configuredRolesFor(gameState = state) {
+      const configured = (gameState.roleConfig || [])
+        .filter((item) => Number(item.count) > 0)
+        .map((item) => item.role)
+        .filter((role) => roleConfigRoles.includes(role));
+      return ["未标", ...new Set(configured)];
+    }
+
+    function safeConfiguredRole(role, gameState = state) {
+      return configuredRolesFor(gameState).includes(role) ? role : "未标";
+    }
+
+    function normalizePlayerRolesForBoard(gameState = state) {
+      const availableRoles = configuredRolesFor(gameState);
+      gameState.players = (gameState.players || []).map((player) => ({
+        ...player,
+        claimRole: availableRoles.includes(player.claimRole) ? player.claimRole : "未标",
+        trueRole: availableRoles.includes(player.trueRole) ? player.trueRole : "未标"
+      }));
+    }
+
     function roleOptions(selected) {
-      return roles.map((role) => `<option ${role === selected ? "selected" : ""}>${role}</option>`).join("");
+      const safeSelected = safeConfiguredRole(selected);
+      return configuredRolesFor().map((role) => `<option ${role === safeSelected ? "selected" : ""}>${role}</option>`).join("");
     }
 
     function updatePlayer(seat, patch) {
       const player = playerBySeat(seat);
+      if ("claimRole" in patch) patch.claimRole = safeConfiguredRole(patch.claimRole);
+      if ("trueRole" in patch) patch.trueRole = safeConfiguredRole(patch.trueRole);
       Object.assign(player, patch);
       saveState();
       renderAll();
@@ -3284,6 +3303,7 @@
       state.phase = normalizePhase(state.phase);
       state.players = normalizePlayers(state.players, state.seatCount);
       state.roleConfig = normalizeRoleConfig(state.roleConfig, state.seatCount);
+      normalizePlayerRolesForBoard(state);
       state.notes = normalizeNotes(state.notes);
       state.votes = normalizeVotes(state.votes);
       state.events = normalizeEvents(state.events);
