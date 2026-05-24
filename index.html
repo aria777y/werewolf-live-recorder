@@ -273,18 +273,18 @@
 
     .board {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
     }
 
     .player-card {
       position: relative;
-      min-height: 148px;
+      min-height: 74px;
       overflow: hidden;
-      padding: 11px;
+      padding: 8px 9px;
       display: grid;
-      grid-template-rows: auto auto 1fr auto;
-      gap: 8px;
+      grid-template-rows: auto 1fr;
+      gap: 6px;
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -323,7 +323,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
     }
 
     .seat {
@@ -340,14 +340,14 @@
     }
 
     .mini-status {
-      min-height: 24px;
+      min-height: 22px;
       display: inline-flex;
       align-items: center;
-      padding: 3px 7px;
+      padding: 2px 6px;
       border-radius: 999px;
       background: var(--civil-soft);
       color: var(--civil);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 900;
       white-space: nowrap;
     }
@@ -381,10 +381,12 @@
 
     .roles {
       display: grid;
-      gap: 4px;
+      align-content: center;
+      gap: 2px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
+      line-height: 1.35;
     }
 
     .latest {
@@ -1030,13 +1032,13 @@
       }
 
       .board {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 7px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
       }
 
       .player-card {
-        min-height: 116px;
-        padding: 8px;
+        min-height: 72px;
+        padding: 7px;
       }
 
       .player-name h3 {
@@ -1783,30 +1785,20 @@
     function renderBoard() {
       const board = document.querySelector("#playerBoard");
       board.innerHTML = activePlayers().map((player) => {
-        const notes = latestNotesFor(player.seat);
-        const chips = (player.finalTags?.length ? player.finalTags : notes.flatMap((note) => note.tags || [])).slice(0, 4);
-        const latestText = notes[0]?.text || notes[0]?.summary || "";
         const listenLine = state.revealRoles
           ? `听感：${player.claimRole} · ${player.read} / 真：${player.trueRole}`
           : `听感：${player.claimRole} · ${player.read}`;
         const statusClass = ["出局", "放逐", "刀死", "毒死", "枪带", "自爆"].includes(player.status) ? "dead" : readClass(player.read);
         return `
           <article class="player-card ${player.seat === state.selectedSeat ? "is-selected" : ""} ${statusClass === "dead" ? "is-out" : ""}"
-            data-seat="${player.seat}" data-read="${escapeHtml(player.read)}">
+            data-seat="${player.seat}" data-read="${escapeHtml(player.read)}" aria-label="${escapeHtml(playerLabel(player.seat))}">
             <div class="player-top">
               <span class="seat">${player.seat}号</span>
               <span class="mini-status ${statusClass}">${player.sheriff ? "警长 · " : ""}${escapeHtml(player.status)}</span>
             </div>
-            <div class="player-name">
-              <h3>${escapeHtml(player.name)}</h3>
-            </div>
             <div class="roles">
               <span>${escapeHtml(listenLine)}</span>
             </div>
-            <div class="latest">
-              ${chips.length ? chips.map((tag) => `<span class="tag ${tagClass(tag)}">${escapeHtml(tag)}</span>`).join("") : "<span class=\"tag\">未记录</span>"}
-            </div>
-            <p class="card-note">${escapeHtml(compactText(latestText, "点卡片开始速记"))}</p>
           </article>
         `;
       }).join("");
