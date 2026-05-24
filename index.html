@@ -686,6 +686,10 @@
       text-align: right;
     }
 
+    .board-preset-list {
+      margin: 0 0 12px;
+    }
+
     .role-config-list {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1220,6 +1224,11 @@
               <h3>板子配置</h3>
               <p id="roleConfigStatus">按阵营配置身份数量</p>
             </div>
+            <div class="board-config-head">
+              <h3>常用板子</h3>
+              <p>来自附件规则，点一下自动填角色</p>
+            </div>
+            <div class="chips board-preset-list" id="boardPresetList"></div>
             <div class="role-config-list" id="roleConfigRows"></div>
             <div class="quick-actions" style="margin-top:10px">
               <button class="btn primary" type="button" data-add-faction="wolf">添加狼</button>
@@ -1369,22 +1378,22 @@
 
     const roles = [
       "未标", "好人", "民", "狼", "预言家", "女巫", "猎人", "守卫", "白痴", "骑士",
-      "通灵师", "机械狼", "狼王", "摄梦人", "魔术师", "守墓人", "丘比特",
-      "野孩子", "咒狐", "三方", "其他"
+      "通灵师", "机械狼", "狼王", "狼美人", "石像鬼", "怪盗狼王", "摄梦人", "魔术师",
+      "守墓人", "侦探", "警犬", "丘比特", "盗贼", "野孩子", "咒狐", "三方", "其他"
     ];
 
     const factionLabels = {
       wolf: "狼",
       god: "神",
       civil: "民",
-      third: "三方"
+      third: "三方/特殊"
     };
 
     const factionRoles = {
-      wolf: ["狼", "机械狼", "狼王"],
-      god: ["预言家", "女巫", "猎人", "守卫", "白痴", "骑士", "通灵师", "摄梦人", "魔术师", "守墓人"],
+      wolf: ["狼", "机械狼", "狼王", "狼美人", "石像鬼", "怪盗狼王"],
+      god: ["预言家", "女巫", "猎人", "守卫", "白痴", "骑士", "通灵师", "摄梦人", "魔术师", "守墓人", "侦探", "警犬"],
       civil: ["民"],
-      third: ["三方", "丘比特", "野孩子", "咒狐", "其他"]
+      third: ["三方", "丘比特", "盗贼", "野孩子", "咒狐", "其他"]
     };
 
     const roleConfigRoles = Object.values(factionRoles).flat();
@@ -1406,6 +1415,182 @@
       "投票": ["投出", "弃票", "分票", "冲票", "绑票", "警徽流", "PK发言", "票型异常"],
       "终局": ["自爆", "拍刀", "认狼", "身份坐实", "胜负手", "复盘重点", "失误点", "MVP"]
     };
+
+    const boardPresets = [
+      {
+        id: "seer-witch-hunter-idiot",
+        name: "预女猎白",
+        seatCount: 12,
+        roleConfig: [
+          { faction: "wolf", role: "狼", count: 4 },
+          { faction: "god", role: "预言家", count: 1 },
+          { faction: "god", role: "女巫", count: 1 },
+          { faction: "god", role: "猎人", count: 1 },
+          { faction: "god", role: "白痴", count: 1 },
+          { faction: "civil", role: "民", count: 4 }
+        ],
+        ruleNotes: {
+          god: "预言家验阵营；女巫一解一毒且通常不可自救；猎人非毒出局可开枪；白痴被放逐翻牌免死、失去投票权。",
+          wolf: "4名普通狼人夜间共刀，白天可自爆，屠边规则。",
+          third: ""
+        }
+      },
+      {
+        id: "wolf-king-guard",
+        name: "狼王守卫",
+        seatCount: 12,
+        roleConfig: [
+          { faction: "wolf", role: "狼王", count: 1 },
+          { faction: "wolf", role: "狼", count: 3 },
+          { faction: "god", role: "预言家", count: 1 },
+          { faction: "god", role: "女巫", count: 1 },
+          { faction: "god", role: "猎人", count: 1 },
+          { faction: "god", role: "守卫", count: 1 },
+          { faction: "civil", role: "民", count: 4 }
+        ],
+        ruleNotes: {
+          god: "预言家、女巫、猎人、守卫标准技能；守卫不可连守，同守同救死亡。",
+          wolf: "狼王白天放逐出局可开枪，夜间死亡不能发动；普通狼人共刀可自爆。",
+          third: ""
+        }
+      },
+      {
+        id: "wolf-king-dreamer",
+        name: "狼王摄梦",
+        seatCount: 12,
+        roleConfig: [
+          { faction: "wolf", role: "狼王", count: 1 },
+          { faction: "wolf", role: "狼", count: 3 },
+          { faction: "god", role: "预言家", count: 1 },
+          { faction: "god", role: "女巫", count: 1 },
+          { faction: "god", role: "猎人", count: 1 },
+          { faction: "god", role: "摄梦人", count: 1 },
+          { faction: "civil", role: "民", count: 4 }
+        ],
+        ruleNotes: {
+          god: "摄梦人每晚必须梦游1人，免疫狼刀和毒；连续两晚梦同一人则梦杀；摄梦人夜死时当晚梦游者同死。",
+          wolf: "狼王白天放逐出局可开枪；普通狼人共刀可自爆。",
+          third: ""
+        }
+      },
+      {
+        id: "wolf-beauty-guard",
+        name: "狼美守卫",
+        seatCount: 12,
+        roleConfig: [
+          { faction: "wolf", role: "狼美人", count: 1 },
+          { faction: "wolf", role: "狼", count: 3 },
+          { faction: "god", role: "预言家", count: 1 },
+          { faction: "god", role: "女巫", count: 1 },
+          { faction: "god", role: "猎人", count: 1 },
+          { faction: "god", role: "守卫", count: 1 },
+          { faction: "civil", role: "民", count: 4 }
+        ],
+        ruleNotes: {
+          god: "预言家、女巫、猎人、守卫标准技能；殉情玩家无法发动自身技能。",
+          wolf: "狼美人随狼队刀人后单独魅惑1人，不可连续两晚魅惑同一人；狼美人出局时昨夜被魅惑者殉情。",
+          third: ""
+        }
+      },
+      {
+        id: "wolf-beauty-knight",
+        name: "狼美骑士",
+        seatCount: 12,
+        roleConfig: [
+          { faction: "wolf", role: "狼美人", count: 1 },
+          { faction: "wolf", role: "狼", count: 3 },
+          { faction: "god", role: "预言家", count: 1 },
+          { faction: "god", role: "女巫", count: 1 },
+          { faction: "god", role: "骑士", count: 1 },
+          { faction: "god", role: "守卫", count: 1 },
+          { faction: "civil", role: "民", count: 4 }
+        ],
+        ruleNotes: {
+          god: "骑士在警徽落地后、警长归票前可决斗1人；决斗狼人则狼人出局，决斗好人则骑士出局。",
+          wolf: "狼美人每晚魅惑1人，出局时带走昨夜魅惑对象；普通狼人共刀可自爆。",
+          third: ""
+        }
+      },
+      {
+        id: "mechanical-psychic",
+        name: "机械通灵",
+        seatCount: 12,
+        roleConfig: [
+          { faction: "wolf", role: "机械狼", count: 1 },
+          { faction: "wolf", role: "狼", count: 3 },
+          { faction: "god", role: "通灵师", count: 1 },
+          { faction: "god", role: "女巫", count: 1 },
+          { faction: "god", role: "猎人", count: 1 },
+          { faction: "god", role: "守卫", count: 1 },
+          { faction: "civil", role: "民", count: 4 }
+        ],
+        ruleNotes: {
+          god: "通灵师每晚查具体身份；女巫一解一毒不可自救；猎人非毒出局可开枪；守卫不可连守。",
+          wolf: "机械狼不与小狼见面，仅1次学习1名玩家并获得技能；普通狼人全出局后机械狼解锁狼刀。",
+          third: ""
+        }
+      },
+      {
+        id: "gargoyle-gravekeeper",
+        name: "石像鬼守墓人",
+        seatCount: 12,
+        roleConfig: [
+          { faction: "wolf", role: "石像鬼", count: 1 },
+          { faction: "wolf", role: "狼", count: 3 },
+          { faction: "god", role: "预言家", count: 1 },
+          { faction: "god", role: "女巫", count: 1 },
+          { faction: "god", role: "猎人", count: 1 },
+          { faction: "god", role: "守墓人", count: 1 },
+          { faction: "civil", role: "民", count: 4 }
+        ],
+        ruleNotes: {
+          god: "守墓人第二夜起可得知上一个白天被放逐玩家阵营；预言家、女巫、猎人标准技能。",
+          wolf: "石像鬼每晚查具体身份，不与小狼见面、不能自爆、不能参与刀人；小狼全出后获得刀人能力。",
+          third: ""
+        }
+      },
+      {
+        id: "detective-rogue",
+        name: "侦探怪盗",
+        seatCount: 12,
+        roleConfig: [
+          { faction: "wolf", role: "怪盗狼王", count: 1 },
+          { faction: "wolf", role: "狼", count: 3 },
+          { faction: "god", role: "侦探", count: 1 },
+          { faction: "god", role: "警犬", count: 1 },
+          { faction: "god", role: "女巫", count: 1 },
+          { faction: "god", role: "守卫", count: 1 },
+          { faction: "civil", role: "民", count: 4 }
+        ],
+        ruleNotes: {
+          god: "侦探白天可翻牌夺警并指定处决1人；侦探翻牌后警犬激活，错杀好人可咬人，处决狼人可查验。",
+          wolf: "怪盗狼王有1次免死护盾，发动后免疫当晚至次日白天所有死亡；最后一狼不能发动，技能未用不能自爆。",
+          third: ""
+        }
+      },
+      {
+        id: "cupid-thief",
+        name: "丘比特盗贼",
+        seatCount: 12,
+        deckSize: 14,
+        roleConfig: [
+          { faction: "wolf", role: "狼王", count: 1 },
+          { faction: "wolf", role: "狼", count: 2 },
+          { faction: "god", role: "预言家", count: 1 },
+          { faction: "god", role: "女巫", count: 1 },
+          { faction: "god", role: "猎人", count: 1 },
+          { faction: "god", role: "白痴", count: 1 },
+          { faction: "civil", role: "民", count: 5 },
+          { faction: "third", role: "丘比特", count: 1 },
+          { faction: "third", role: "盗贼", count: 1 }
+        ],
+        ruleNotes: {
+          god: "12人使用14张牌库；盗贼首夜二选一并埋1张牌，丘比特连2名情侣；猎人/狼王殉情不开技能。",
+          wolf: "牌库中狼王1、普通狼人2；盗贼两张可选牌中有狼时必须选狼，保证场上固定3狼。",
+          third: "人狼链时丘比特与情侣为第三方，需屠城获胜；好好链走好人，狼狼链走狼人。"
+        }
+      }
+    ];
 
     const examplePlayers = [
       ["杨", "猎人", "猎人", "偏好"],
@@ -2195,6 +2380,7 @@
       document.querySelector("#godRuleInput").value = state.ruleNotes.god || "";
       document.querySelector("#wolfRuleInput").value = state.ruleNotes.wolf || "";
       document.querySelector("#thirdRuleInput").value = state.ruleNotes.third || "";
+      renderBoardPresets();
       renderRoleConfig();
 
       const rows = document.querySelector("#setupRows");
@@ -2251,15 +2437,59 @@
       return { left: fixed, top: moving };
     }
 
+    function boardPresetById(id) {
+      return boardPresets.find((preset) => preset.id === id);
+    }
+
+    function renderBoardPresets() {
+      const list = document.querySelector("#boardPresetList");
+      if (!list) return;
+      list.innerHTML = boardPresets.map((preset) => {
+        const countText = preset.deckSize && preset.deckSize !== preset.seatCount
+          ? `${preset.seatCount}人/${preset.deckSize}张`
+          : `${preset.seatCount}人`;
+        const summary = preset.roleConfig.map((item) => `${item.role}${item.count}`).join("、");
+        return `<button class="chip ${state.preset === preset.id ? "is-selected" : ""}" type="button" data-board-preset="${preset.id}" title="${escapeHtml(summary)}">${escapeHtml(preset.name)} · ${countText}</button>`;
+      }).join("");
+
+      list.querySelectorAll("[data-board-preset]").forEach((button) => {
+        button.addEventListener("click", () => applyBoardPreset(button.dataset.boardPreset));
+      });
+    }
+
+    function applyBoardPreset(id) {
+      const preset = boardPresetById(id);
+      if (!preset) return;
+      state.preset = preset.id;
+      state.seatCount = preset.seatCount;
+      state.players = normalizePlayers(state.players, preset.seatCount);
+      state.selectedSeat = Math.min(state.selectedSeat, preset.seatCount);
+      state.roleConfig = preset.roleConfig.map((item) => ({ ...item }));
+      state.ruleNotes = {
+        god: preset.ruleNotes?.god || "",
+        wolf: preset.ruleNotes?.wolf || "",
+        third: preset.ruleNotes?.third || ""
+      };
+      state.title = preset.name;
+      saveState();
+      renderAll();
+      showToast(`已套用${preset.name}`);
+    }
+
     function renderRoleConfig() {
       const list = document.querySelector("#roleConfigRows");
       const total = roleConfigTotal();
-      const diff = state.seatCount - total;
+      const preset = boardPresetById(state.preset);
+      const targetTotal = preset?.deckSize || state.seatCount;
+      const diff = targetTotal - total;
+      const targetText = preset?.deckSize && preset.deckSize !== state.seatCount
+        ? `${targetTotal}张牌 / ${state.seatCount}人`
+        : `${targetTotal}/${state.seatCount}`;
       const status = diff === 0
-        ? `已配满 ${total}/${state.seatCount}`
+        ? (preset?.deckSize && preset.deckSize !== state.seatCount ? `牌库已配满 ${targetText}` : `已配满 ${total}/${state.seatCount}`)
         : diff > 0
-          ? `还差 ${diff} 个身份（${total}/${state.seatCount}）`
-          : `超出 ${Math.abs(diff)} 个身份（${total}/${state.seatCount}）`;
+          ? `还差 ${diff} 个身份（${total}/${targetTotal}）`
+          : `超出 ${Math.abs(diff)} 个身份（${total}/${targetTotal}）`;
 
       document.querySelector("#roleConfigStatus").textContent = status;
       document.querySelector("#roleConfigStatus").style.color = diff === 0 ? "var(--good)" : "var(--danger)";
@@ -2289,6 +2519,7 @@
       list.querySelectorAll("[data-role-index]").forEach((select) => {
         select.addEventListener("change", () => {
           const index = Number(select.dataset.roleIndex);
+          state.preset = "custom";
           state.roleConfig[index].role = select.value;
           state.roleConfig[index].faction = roleFaction(select.value);
           saveState();
@@ -2297,6 +2528,7 @@
       });
       list.querySelectorAll("[data-count-index]").forEach((input) => {
         input.addEventListener("change", () => {
+          state.preset = "custom";
           state.roleConfig[Number(input.dataset.countIndex)].count = Math.max(0, Number(input.value) || 0);
           state.roleConfig = normalizeRoleConfig(state.roleConfig, state.seatCount);
           saveState();
@@ -2305,6 +2537,7 @@
       });
       list.querySelectorAll("[data-remove-role]").forEach((button) => {
         button.addEventListener("click", () => {
+          state.preset = "custom";
           state.roleConfig.splice(Number(button.dataset.removeRole), 1);
           if (!state.roleConfig.length) state.roleConfig.push({ faction: "civil", role: "民", count: state.seatCount });
           saveState();
@@ -2324,6 +2557,7 @@
     }
 
     function fillCivilianSlots() {
+      state.preset = "custom";
       const totalWithoutCivilian = state.roleConfig
         .filter((item) => item.faction !== "civil")
         .reduce((sum, item) => sum + (Number(item.count) || 0), 0);
@@ -2635,7 +2869,7 @@
       state = defaultState();
       state.title = "12人机械狼示例局";
       state.result = "狼人胜";
-      state.preset = "12-mechanical";
+      state.preset = "mechanical-psychic";
       state.roleConfig = [
         { faction: "wolf", role: "狼", count: 3 },
         { faction: "wolf", role: "机械狼", count: 1 },
@@ -2742,6 +2976,7 @@
       });
 
       document.querySelector("#seatCountInput").addEventListener("change", (event) => {
+        state.preset = "custom";
         state.seatCount = normalizeSeatCount(event.target.value);
         state.players = normalizePlayers(state.players, state.seatCount);
         state.selectedSeat = Math.min(state.selectedSeat, state.seatCount);
@@ -2752,6 +2987,7 @@
       document.querySelectorAll("[data-add-faction]").forEach((button) => {
         button.addEventListener("click", () => {
           const faction = button.dataset.addFaction;
+          state.preset = "custom";
           state.roleConfig.push({ faction, role: factionRoles[faction][0], count: 1 });
           saveState();
           renderAll();
