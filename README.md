@@ -17,6 +17,14 @@
 
 `https://你的GitHub用户名.github.io/werewolf-live-recorder/`
 
+当前发布链接：
+
+`https://aria777y.github.io/werewolf-live-recorder/`
+
+手机备用入口（与“全国自驾游”页面同一个 GitHub Pages 站点）：
+
+`https://aria777y.github.io/china_travel/werewolf/`
+
 ## 数据迁移
 
 本工具的数据保存在当前浏览器本地。换到公网链接后，如果想带上旧记录：
