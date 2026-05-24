@@ -517,6 +517,29 @@
       border-color: #bddccf;
     }
 
+    .chip.summary-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .chip.summary-tag.is-selected {
+      box-shadow: 0 0 0 2px rgba(196, 119, 63, 0.22);
+    }
+
+    .chip.summary-tag.is-selected::before {
+      content: "✓";
+      display: inline-grid;
+      place-items: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 11px;
+      line-height: 1;
+    }
+
     .selected-player {
       display: flex;
       justify-content: space-between;
@@ -2326,12 +2349,12 @@
         </div>
 
         <div style="margin-top:12px">
-          <label>归总听感 / 标签</label>
+          <label>听感 / 标签</label>
           <div class="quick-actions" style="margin-top:7px">
             ${reads.map((read) => `<button class="chip ${read === player.read ? "is-selected" : ""}" type="button" data-read="${read}">${read}</button>`).join("")}
           </div>
           <div class="chips" style="margin-top:7px">
-            ${summaryTags.map((tag) => `<button class="chip ${player.finalTags?.includes(tag) ? "is-selected" : ""} ${tagClass(tag)}" type="button" data-final-tag="${tag}">${tag}</button>`).join("")}
+            ${summaryTags.map((tag) => `<button class="chip summary-tag ${player.finalTags?.includes(tag) ? "is-selected" : ""} ${tagClass(tag)}" type="button" data-final-tag="${tag}" aria-pressed="${player.finalTags?.includes(tag) ? "true" : "false"}">${tag}</button>`).join("")}
           </div>
         </div>
 
