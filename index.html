@@ -1953,7 +1953,8 @@
       if (!phaseStatuses || typeof phaseStatuses !== "object") return {};
       return Object.entries(phaseStatuses).reduce((result, [phase, status]) => {
         const safePhase = normalizePhase(phase);
-        result[safePhase] = statusValue(status);
+        const safeStatus = statusValue(status);
+        if (isOutStatus(safeStatus)) result[safePhase] = safeStatus;
         return result;
       }, {});
     }
@@ -1962,6 +1963,9 @@
       const bySeat = new Map(players.map((player) => [player.seat, player]));
       return Array.from({ length: count }, (_, index) => {
         const seat = index + 1;
+        const existing = bySeat.get(seat) || {};
+        const phaseStatuses = normalizePhaseStatuses(existing.phaseStatuses);
+        const legacyStatus = statusValue(existing.status);
         return {
           seat,
           name: `${seat}号`,
@@ -1972,10 +1976,10 @@
           status: "在场",
           phaseStatuses: {},
           sheriff: false,
-          ...(bySeat.get(seat) || {}),
-          status: statusValue(bySeat.get(seat)?.status),
-          phaseStatuses: normalizePhaseStatuses(bySeat.get(seat)?.phaseStatuses),
-          finalTags: Array.isArray(bySeat.get(seat)?.finalTags) ? bySeat.get(seat).finalTags : []
+          ...existing,
+          status: latestStatusFromPhaseStatuses(phaseStatuses) || (isOutStatus(legacyStatus) ? legacyStatus : "在场"),
+          phaseStatuses,
+          finalTags: Array.isArray(existing.finalTags) ? existing.finalTags : []
         };
       });
     }
@@ -2275,10 +2279,6 @@
       renderAll();
     }
 
-    function phaseStatusFor(player, phase = state.phase) {
-      return statusValue(player?.phaseStatuses?.[normalizePhase(phase)] || player?.status);
-    }
-
     function isOutStatus(status) {
       return ["出局", "放逐", "刀死", "毒死", "枪带", "自爆"].includes(status);
     }
@@ -2287,11 +2287,32 @@
       return phases.indexOf(normalizePhase(phase));
     }
 
-    function lockedStatusInfo(player, phase = state.phase) {
+    function phaseStatusRecordFor(player, phase = state.phase) {
       const currentIndex = phaseIndex(phase);
-      return phaseStatusEntries(player).find(([entryPhase, status]) => (
-        isOutStatus(status) && phaseIndex(entryPhase) < currentIndex
-      )) || null;
+      const entries = phaseStatusEntries(player)
+        .filter(([entryPhase]) => phaseIndex(entryPhase) <= currentIndex);
+      return entries.length ? entries[entries.length - 1] : null;
+    }
+
+    function latestStatusFromPhaseStatuses(phaseStatuses) {
+      const normalized = normalizePhaseStatuses(phaseStatuses);
+      const entries = phases
+        .map((phase) => [phase, normalized[phase]])
+        .filter(([, status]) => isOutStatus(status));
+      return entries.length ? entries[entries.length - 1][1] : "";
+    }
+
+    function phaseStatusFor(player, phase = state.phase) {
+      const record = phaseStatusRecordFor(player, phase);
+      if (record) return record[1];
+      const normalized = normalizePhaseStatuses(player?.phaseStatuses);
+      if (Object.keys(normalized).length) return "在场";
+      const fallback = statusValue(player?.status);
+      return isOutStatus(fallback) ? fallback : "在场";
+    }
+
+    function lockedStatusInfo(player, phase = state.phase) {
+      return phaseStatusRecordFor(player, phase);
     }
 
     function phaseStatusEntries(player) {
@@ -2597,6 +2618,7 @@
 
     function updatePlayerStatus(seat, status) {
       const player = playerBySeat(seat);
+      player.phaseStatuses = normalizePhaseStatuses(player.phaseStatuses);
       const statusLock = lockedStatusInfo(player);
       if (statusLock) {
         showToast(`${playerLabel(seat)} 已在${statusLock[0]}${statusLock[1]}，后续阶段不可改状态`);
@@ -2604,9 +2626,16 @@
         return;
       }
       const safeStatus = statusValue(status);
-      player.phaseStatuses = normalizePhaseStatuses(player.phaseStatuses);
+      if (safeStatus === "在场") {
+        delete player.phaseStatuses[state.phase];
+        player.status = latestStatusFromPhaseStatuses(player.phaseStatuses) || "在场";
+        saveState();
+        renderAll();
+        showToast(`${playerLabel(seat)} 保持在场`);
+        return;
+      }
       player.phaseStatuses[state.phase] = safeStatus;
-      player.status = safeStatus;
+      player.status = latestStatusFromPhaseStatuses(player.phaseStatuses) || safeStatus;
       addEvent({
         type: "状态",
         actor: seat,
