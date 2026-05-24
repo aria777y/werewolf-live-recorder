@@ -875,24 +875,34 @@
     }
 
     .saved-game-card {
-      width: 100%;
       min-height: 78px;
+      position: relative;
       display: grid;
-      gap: 5px;
-      text-align: left;
-      padding: 11px;
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background: var(--surface);
       color: var(--ink);
-      cursor: pointer;
       box-shadow: 0 7px 18px rgba(112, 79, 47, 0.07);
+      overflow: hidden;
     }
 
     .saved-game-card:hover,
     .saved-game-card.is-selected {
       border-color: var(--accent);
       background: #fff6e4;
+    }
+
+    .saved-game-main {
+      width: 100%;
+      min-height: 76px;
+      display: grid;
+      gap: 5px;
+      text-align: left;
+      padding: 11px 58px 11px 11px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
     }
 
     .saved-game-card strong {
@@ -906,6 +916,15 @@
       color: var(--muted);
       font-size: 12px;
       line-height: 1.45;
+    }
+
+    .saved-game-delete {
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      min-height: 30px;
+      padding: 5px 9px;
+      font-size: 12px;
     }
 
     .vote-bar {
@@ -2138,9 +2157,18 @@
         showToast("还没有历史记录");
         return;
       }
+      deleteSavedGame(record.id);
+    }
+
+    function deleteSavedGame(recordId) {
+      const record = savedGames.find((item) => item.id === recordId);
+      if (!record) {
+        showToast("这条历史记录不存在");
+        return;
+      }
       if (!confirm(`删除历史记录“${record.name}”吗？`)) return;
       savedGames = savedGames.filter((item) => item.id !== record.id);
-      selectedSavedGameId = savedGames[0]?.id || "";
+      if (selectedSavedGameId === record.id) selectedSavedGameId = savedGames[0]?.id || "";
       saveSavedGames();
       renderSavedGames();
       showToast("历史记录已删除");
@@ -3025,11 +3053,14 @@
       const voteCount = (snapshot.votes || []).length;
       const eventCount = (snapshot.events || []).length;
       return `
-        <button class="saved-game-card ${record.id === selectedSavedGameId ? "is-selected" : ""}" type="button" data-open-saved="${record.id}">
-          <strong>${escapeHtml(record.name)}</strong>
-          <span>${escapeHtml(formatDateTime(record.savedAt))} · ${escapeHtml(resultText)}</span>
-          <p>${escapeHtml(snapshot.seatCount)}人 · ${escapeHtml(record.boardName)} · 发言${noteCount} / 票型${voteCount} / 事件${eventCount}</p>
-        </button>
+        <article class="saved-game-card ${record.id === selectedSavedGameId ? "is-selected" : ""}">
+          <button class="saved-game-main" type="button" data-open-saved="${record.id}">
+            <strong>${escapeHtml(record.name)}</strong>
+            <span>${escapeHtml(formatDateTime(record.savedAt))} · ${escapeHtml(resultText)}</span>
+            <p>${escapeHtml(snapshot.seatCount)}人 · ${escapeHtml(record.boardName)} · 发言${noteCount} / 票型${voteCount} / 事件${eventCount}</p>
+          </button>
+          <button class="btn danger saved-game-delete" type="button" data-delete-saved="${record.id}" aria-label="删除${escapeHtml(record.name)}">删</button>
+        </article>
       `;
     }
 
@@ -3055,6 +3086,9 @@
 
       document.querySelectorAll("[data-open-saved]").forEach((button) => {
         button.addEventListener("click", () => openSavedGame(button.dataset.openSaved));
+      });
+      document.querySelectorAll("[data-delete-saved]").forEach((button) => {
+        button.addEventListener("click", () => deleteSavedGame(button.dataset.deleteSaved));
       });
 
       const detailTitle = document.querySelector("#savedGameDetailTitle");
