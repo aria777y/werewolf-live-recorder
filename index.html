@@ -155,6 +155,14 @@
       border-color: var(--blue);
     }
 
+    .btn:disabled,
+    .chip:disabled,
+    select:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+    }
+
     .btn.primary,
     .tab.is-active {
       background: var(--blue);
@@ -2275,6 +2283,17 @@
       return ["出局", "放逐", "刀死", "毒死", "枪带", "自爆"].includes(status);
     }
 
+    function phaseIndex(phase) {
+      return phases.indexOf(normalizePhase(phase));
+    }
+
+    function lockedStatusInfo(player, phase = state.phase) {
+      const currentIndex = phaseIndex(phase);
+      return phaseStatusEntries(player).find(([entryPhase, status]) => (
+        isOutStatus(status) && phaseIndex(entryPhase) < currentIndex
+      )) || null;
+    }
+
     function phaseStatusEntries(player) {
       const phaseStatuses = normalizePhaseStatuses(player?.phaseStatuses);
       return phases
@@ -2366,6 +2385,11 @@
 
     function quickRecordHtml(player) {
       const currentStatus = phaseStatusFor(player);
+      const statusLock = lockedStatusInfo(player);
+      const isStatusLocked = Boolean(statusLock);
+      const statusLockedText = statusLock
+        ? `${statusLock[0]}${statusLock[1]}后，后续阶段不可修改状态`
+        : "";
       return `
         <div class="selected-player">
           <div>
@@ -2385,11 +2409,12 @@
           </label>
           <label class="field">
             <span>${escapeHtml(state.phase)}状态</span>
-            <select id="quickStatus">${statuses.map((status) => `<option ${status === currentStatus ? "selected" : ""}>${status}</option>`).join("")}</select>
+            <select id="quickStatus" ${isStatusLocked ? "disabled" : ""}>${statuses.map((status) => `<option ${status === currentStatus ? "selected" : ""}>${status}</option>`).join("")}</select>
           </label>
         </div>
 
         <p class="card-note" style="margin-top:8px">阶段状态：${escapeHtml(phaseStatusSummary(player))}</p>
+        ${isStatusLocked ? `<p class="card-note" style="margin-top:6px">${escapeHtml(statusLockedText)}</p>` : ""}
 
         <div style="margin-top:12px">
           <label>听感 / 标签</label>
@@ -2409,13 +2434,13 @@
         <div class="status-actions" style="margin-top:10px">
           <button class="btn primary" type="button" id="saveNoteBtn">保存本句</button>
           <button class="btn ghost" type="button" id="sheriffBtn">${player.sheriff ? "取消警长" : "设为警长"}</button>
-          <button class="btn danger" type="button" id="markOutBtn">标记出局</button>
+          <button class="btn danger" type="button" id="markOutBtn" ${isStatusLocked ? "disabled" : ""}>标记出局</button>
         </div>
 
         <div style="margin-top:12px">
           <label>快捷事件</label>
           <div class="quick-actions" style="margin-top:7px">
-            ${["放逐", "刀死", "毒死", "枪带", "自爆", "在场"].map((status) => `<button class="btn ${status === "在场" ? "ghost" : "danger"}" type="button" data-status-shortcut="${status}">${status}</button>`).join("")}
+            ${["放逐", "刀死", "毒死", "枪带", "自爆", "在场"].map((status) => `<button class="btn ${status === "在场" ? "ghost" : "danger"}" type="button" data-status-shortcut="${status}" ${isStatusLocked ? "disabled" : ""}>${status}</button>`).join("")}
           </div>
         </div>
 
@@ -2572,6 +2597,12 @@
 
     function updatePlayerStatus(seat, status) {
       const player = playerBySeat(seat);
+      const statusLock = lockedStatusInfo(player);
+      if (statusLock) {
+        showToast(`${playerLabel(seat)} 已在${statusLock[0]}${statusLock[1]}，后续阶段不可改状态`);
+        renderQuickModal();
+        return;
+      }
       const safeStatus = statusValue(status);
       player.phaseStatuses = normalizePhaseStatuses(player.phaseStatuses);
       player.phaseStatuses[state.phase] = safeStatus;
