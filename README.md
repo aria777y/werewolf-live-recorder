@@ -17,11 +17,19 @@
 
 `https://你的GitHub用户名.github.io/werewolf-live-recorder/`
 
-当前发布链接：
+正式手机入口（Cloudflare Pages）：
+
+`https://werewolf-live-recorder.pages.dev/`
+
+Vercel 备用入口：
+
+`https://werewolf-live-recorder-public.vercel.app/`
+
+GitHub Pages 入口：
 
 `https://aria777y.github.io/werewolf-live-recorder/`
 
-手机备用入口（与“全国自驾游”页面同一个 GitHub Pages 站点）：
+GitHub Pages 备用入口（与“全国自驾游”页面同一个 GitHub Pages 站点）：
 
 `https://aria777y.github.io/china_travel/werewolf/`
 
