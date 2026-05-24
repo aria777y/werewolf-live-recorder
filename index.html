@@ -1753,6 +1753,7 @@
         read: "未知",
         finalTags: [],
         status: "在场",
+        phaseStatuses: {},
         sheriff: false
       }));
     }
@@ -1936,6 +1937,19 @@
         .filter((item) => item.count > 0 || item.role);
     }
 
+    function statusValue(status) {
+      return statuses.includes(status) ? status : "在场";
+    }
+
+    function normalizePhaseStatuses(phaseStatuses) {
+      if (!phaseStatuses || typeof phaseStatuses !== "object") return {};
+      return Object.entries(phaseStatuses).reduce((result, [phase, status]) => {
+        const safePhase = normalizePhase(phase);
+        result[safePhase] = statusValue(status);
+        return result;
+      }, {});
+    }
+
     function normalizePlayers(players, count) {
       const bySeat = new Map(players.map((player) => [player.seat, player]));
       return Array.from({ length: count }, (_, index) => {
@@ -1948,8 +1962,11 @@
           read: "未知",
           finalTags: [],
           status: "在场",
+          phaseStatuses: {},
           sheriff: false,
           ...(bySeat.get(seat) || {}),
+          status: statusValue(bySeat.get(seat)?.status),
+          phaseStatuses: normalizePhaseStatuses(bySeat.get(seat)?.phaseStatuses),
           finalTags: Array.isArray(bySeat.get(seat)?.finalTags) ? bySeat.get(seat).finalTags : []
         };
       });
@@ -2250,6 +2267,28 @@
       renderAll();
     }
 
+    function phaseStatusFor(player, phase = state.phase) {
+      return statusValue(player?.phaseStatuses?.[normalizePhase(phase)] || player?.status);
+    }
+
+    function isOutStatus(status) {
+      return ["出局", "放逐", "刀死", "毒死", "枪带", "自爆"].includes(status);
+    }
+
+    function phaseStatusEntries(player) {
+      const phaseStatuses = normalizePhaseStatuses(player?.phaseStatuses);
+      return phases
+        .map((phase) => [phase, phaseStatuses[phase]])
+        .filter(([, status]) => status);
+    }
+
+    function phaseStatusSummary(player) {
+      const entries = phaseStatusEntries(player);
+      return entries.length
+        ? entries.map(([phase, status]) => `${phase}${status}`).join(" / ")
+        : "未记录";
+    }
+
     function closeQuickModal(shouldRender = true) {
       quickModalOpen = false;
       document.body.classList.remove("modal-open");
@@ -2263,16 +2302,17 @@
     function renderBoard() {
       const board = document.querySelector("#playerBoard");
       board.innerHTML = activePlayers().map((player) => {
+        const currentStatus = phaseStatusFor(player);
         const listenLine = state.revealRoles
           ? `听感：${player.claimRole} · ${player.read} / 真：${player.trueRole}`
           : `听感：${player.claimRole} · ${player.read}`;
-        const statusClass = ["出局", "放逐", "刀死", "毒死", "枪带", "自爆"].includes(player.status) ? "dead" : readClass(player.read);
+        const statusClass = isOutStatus(currentStatus) ? "dead" : readClass(player.read);
         return `
           <article class="player-card ${player.seat === state.selectedSeat ? "is-selected" : ""} ${statusClass === "dead" ? "is-out" : ""}"
             data-seat="${player.seat}" data-read="${escapeHtml(player.read)}" aria-label="${escapeHtml(playerLabel(player.seat))}">
             <div class="player-top">
               <span class="seat">${player.seat}号</span>
-              <span class="mini-status ${statusClass}">${player.sheriff ? "警长 · " : ""}${escapeHtml(player.status)}</span>
+              <span class="mini-status ${statusClass}">${player.sheriff ? "警长 · " : ""}${escapeHtml(currentStatus)}</span>
             </div>
             <div class="roles">
               <span>${escapeHtml(listenLine)}</span>
@@ -2325,6 +2365,7 @@
     }
 
     function quickRecordHtml(player) {
+      const currentStatus = phaseStatusFor(player);
       return `
         <div class="selected-player">
           <div>
@@ -2343,10 +2384,12 @@
             <select id="quickTrueRole">${roleOptions(player.trueRole)}</select>
           </label>
           <label class="field">
-            <span>状态</span>
-            <select id="quickStatus">${statuses.map((status) => `<option ${status === player.status ? "selected" : ""}>${status}</option>`).join("")}</select>
+            <span>${escapeHtml(state.phase)}状态</span>
+            <select id="quickStatus">${statuses.map((status) => `<option ${status === currentStatus ? "selected" : ""}>${status}</option>`).join("")}</select>
           </label>
         </div>
+
+        <p class="card-note" style="margin-top:8px">阶段状态：${escapeHtml(phaseStatusSummary(player))}</p>
 
         <div style="margin-top:12px">
           <label>听感 / 标签</label>
@@ -2529,17 +2572,20 @@
 
     function updatePlayerStatus(seat, status) {
       const player = playerBySeat(seat);
-      player.status = status;
+      const safeStatus = statusValue(status);
+      player.phaseStatuses = normalizePhaseStatuses(player.phaseStatuses);
+      player.phaseStatuses[state.phase] = safeStatus;
+      player.status = safeStatus;
       addEvent({
         type: "状态",
         actor: seat,
         target: "",
-        text: `${playerLabel(seat)} 标记为 ${status}`,
+        text: `${playerLabel(seat)} 在${state.phase}标记为 ${safeStatus}`,
         silent: true
       });
       saveState();
       renderAll();
-      showToast(`${playerLabel(seat)} 已标记为 ${status}`);
+      showToast(`${playerLabel(seat)} ${state.phase}已标记为 ${safeStatus}`);
     }
 
     function toggleFinalTag(seat, tag) {
@@ -3090,7 +3136,8 @@
         return `
           <article class="history-card">
             <h3>${player.seat}号 ${escapeHtml(player.name)}</h3>
-            <p>听感身份：${escapeHtml(player.claimRole)}；状态：${escapeHtml(player.status)}${player.sheriff ? "；警长" : ""}；标签：${escapeHtml(finalTags)}</p>
+            <p>听感身份：${escapeHtml(player.claimRole)}；最新状态：${escapeHtml(player.status)}${player.sheriff ? "；警长" : ""}；标签：${escapeHtml(finalTags)}</p>
+            <p>阶段状态：${escapeHtml(phaseStatusSummary(player))}</p>
             <p>${escapeHtml(compactText(topNotes, "暂无发言记录"))}</p>
           </article>
         `;
@@ -3116,7 +3163,7 @@
       lines.push("## 身份表");
       players.forEach((player) => {
         const finalTags = player.finalTags?.length ? player.finalTags.join("、") : "未标";
-        lines.push(`${player.seat}号 ${player.name}：听感身份${player.claimRole} / 状态${player.status}${player.sheriff ? " / 警长" : ""} / 标签${finalTags} / 真${player.trueRole}`);
+        lines.push(`${player.seat}号 ${player.name}：听感身份${player.claimRole} / 最新状态${player.status}${player.sheriff ? " / 警长" : ""} / 阶段状态${phaseStatusSummary(player)} / 标签${finalTags} / 真${player.trueRole}`);
       });
 
       lines.push("");
@@ -3228,6 +3275,11 @@
       state.players[6].status = "枪带";
       state.players[3].status = "刀死";
       state.players[4].status = "刀死";
+      state.players[1].phaseStatuses = { "第一天白天": "放逐" };
+      state.players[0].phaseStatuses = { "第一天白天": "刀死" };
+      state.players[6].phaseStatuses = { "第一天白天": "枪带" };
+      state.players[3].phaseStatuses = { "第二天白天": "刀死" };
+      state.players[4].phaseStatuses = { "第二天白天": "刀死" };
       const seed = Date.now();
       state.notes = [
         noteSeed(seed + 1, 10, "警上", ["过麦"], "", "快速过麦到11号"),
