@@ -328,14 +328,14 @@
 
     .seat {
       display: inline-flex;
-      min-width: 38px;
-      height: 30px;
+      min-width: 30px;
+      height: 24px;
       align-items: center;
       justify-content: center;
       color: #fff;
       background: #4a372b;
       border-radius: 999px;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 900;
     }
 
@@ -529,6 +529,61 @@
 
     .selected-player strong {
       font-size: 20px;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    .quick-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(61, 48, 40, 0.34);
+      backdrop-filter: blur(8px);
+    }
+
+    .quick-modal.is-open {
+      display: grid;
+    }
+
+    .quick-modal-card {
+      width: min(760px, calc(100vw - 24px));
+      max-height: min(88vh, 860px);
+      overflow: auto;
+      padding: 15px;
+      background: rgba(255, 250, 240, 0.98);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 22px 54px rgba(84, 54, 30, 0.28);
+    }
+
+    .quick-modal-head {
+      position: sticky;
+      top: -15px;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 12px;
+      margin: -15px -15px 12px;
+      padding: 15px;
+      background: rgba(255, 250, 240, 0.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+
+    .quick-modal-head h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .quick-panel-entry {
+      display: grid;
+      gap: 10px;
     }
 
     .quick-actions,
@@ -1111,7 +1166,7 @@
             <div>
               <h2 id="boardTitle">12人战术桌盘</h2>
             </div>
-            <p>点玩家，右侧快速记录</p>
+            <p>点玩家，弹窗快速记录</p>
           </div>
           <div class="board" id="playerBoard"></div>
         </section>
@@ -1285,6 +1340,19 @@
     </section>
   </main>
 
+  <div class="quick-modal" id="quickModal" aria-hidden="true">
+    <section class="quick-modal-card" role="dialog" aria-modal="true" aria-labelledby="quickModalTitle">
+      <div class="quick-modal-head">
+        <div>
+          <p class="eyebrow" style="margin:0 0 4px">玩家速记</p>
+          <h2 id="quickModalTitle">快速记录</h2>
+        </div>
+        <button class="btn ghost" type="button" id="closeQuickModalBtn">关闭</button>
+      </div>
+      <div id="quickModalPanel"></div>
+    </section>
+  </div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <nav class="mobile-dock" aria-label="手机快捷入口">
@@ -1354,6 +1422,7 @@
 
     let state = loadState();
     let selectedVoters = new Set();
+    let quickModalOpen = false;
 
     function createPlayers(count = 12) {
       return Array.from({ length: count }, (_, index) => ({
@@ -1636,6 +1705,7 @@
           };
           state.selectedSeat = Math.min(Number(state.selectedSeat) || 1, state.seatCount);
           selectedVoters = new Set();
+          quickModalOpen = false;
           saveState();
           renderAll();
           showToast("本局数据已导入");
@@ -1662,6 +1732,7 @@
     }
 
     function setView(view) {
+      closeQuickModal(false);
       document.querySelectorAll(".tab").forEach((tab) => {
         tab.classList.toggle("is-active", tab.dataset.view === view);
       });
@@ -1689,6 +1760,24 @@
         .filter((note) => note.seat === seat && shouldShowPlayerNote(note))
         .slice(-count)
         .reverse();
+    }
+
+    function openQuickModal(seat) {
+      state.selectedSeat = Number(seat);
+      state.pendingTags = [];
+      quickModalOpen = true;
+      saveState();
+      renderAll();
+    }
+
+    function closeQuickModal(shouldRender = true) {
+      quickModalOpen = false;
+      document.body.classList.remove("modal-open");
+      document.querySelector("#quickModal")?.classList.remove("is-open");
+      document.querySelector("#quickModal")?.setAttribute("aria-hidden", "true");
+      const panel = document.querySelector("#quickModalPanel");
+      if (panel) panel.innerHTML = "";
+      if (shouldRender) renderQuickModal();
     }
 
     function renderBoard() {
@@ -1724,10 +1813,7 @@
 
       board.querySelectorAll(".player-card").forEach((card) => {
         card.addEventListener("click", () => {
-          state.selectedSeat = Number(card.dataset.seat);
-          state.pendingTags = [];
-          saveState();
-          renderAll();
+          openQuickModal(card.dataset.seat);
         });
       });
     }
@@ -1753,7 +1839,23 @@
         return;
       }
 
+      const notes = latestNotesFor(player.seat, 1);
       panel.innerHTML = `
+        <div class="quick-panel-entry">
+          <div>
+            <span class="eyebrow" style="margin:0">当前选中</span>
+            <strong>${player.seat}号 ${escapeHtml(player.name)}</strong>
+          </div>
+          <p class="card-note">${escapeHtml(compactText(notes[0]?.text || notes[0]?.summary || "", "点玩家卡片会弹窗记录发言、听感和状态"))}</p>
+          <button class="btn primary" type="button" id="openQuickModalBtn">打开速记弹窗</button>
+        </div>
+      `;
+
+      panel.querySelector("#openQuickModalBtn").addEventListener("click", () => openQuickModal(player.seat));
+    }
+
+    function quickRecordHtml(player) {
+      return `
         <div class="selected-player">
           <div>
             <span class="eyebrow" style="margin:0">快速记录</span>
@@ -1824,10 +1926,12 @@
           <div class="player-note-list">${playerNotesHtml(player.seat)}</div>
         </div>
       `;
+    }
 
-      document.querySelector("#quickClaimRole").addEventListener("change", (event) => updatePlayer(player.seat, { claimRole: event.target.value }));
-      document.querySelector("#quickTrueRole").addEventListener("change", (event) => updatePlayer(player.seat, { trueRole: event.target.value }));
-      document.querySelector("#quickStatus").addEventListener("change", (event) => updatePlayerStatus(player.seat, event.target.value));
+    function bindQuickRecordEvents(panel, player) {
+      panel.querySelector("#quickClaimRole").addEventListener("change", (event) => updatePlayer(player.seat, { claimRole: event.target.value }));
+      panel.querySelector("#quickTrueRole").addEventListener("change", (event) => updatePlayer(player.seat, { trueRole: event.target.value }));
+      panel.querySelector("#quickStatus").addEventListener("change", (event) => updatePlayerStatus(player.seat, event.target.value));
       panel.querySelectorAll("[data-read]").forEach((button) => {
         button.addEventListener("click", () => updatePlayer(player.seat, { read: button.dataset.read }));
       });
@@ -1846,14 +1950,38 @@
       panel.querySelectorAll("[data-delete-note]").forEach((button) => {
         button.addEventListener("click", () => deleteNote(Number(button.dataset.deleteNote)));
       });
-      document.querySelector("#clearPendingBtn").addEventListener("click", () => {
+      panel.querySelector("#clearPendingBtn").addEventListener("click", () => {
         state.pendingTags = [];
         saveState();
         renderQuickPanel();
+        renderQuickModal();
       });
-      document.querySelector("#saveNoteBtn").addEventListener("click", saveQuickNote);
-      document.querySelector("#sheriffBtn").addEventListener("click", () => toggleSheriff(player.seat));
-      document.querySelector("#markOutBtn").addEventListener("click", () => updatePlayerStatus(player.seat, "出局"));
+      panel.querySelector("#saveNoteBtn").addEventListener("click", () => saveQuickNote(panel));
+      panel.querySelector("#sheriffBtn").addEventListener("click", () => toggleSheriff(player.seat));
+      panel.querySelector("#markOutBtn").addEventListener("click", () => updatePlayerStatus(player.seat, "出局"));
+    }
+
+    function renderQuickModal() {
+      const modal = document.querySelector("#quickModal");
+      const panel = document.querySelector("#quickModalPanel");
+      const title = document.querySelector("#quickModalTitle");
+      const player = playerBySeat(state.selectedSeat);
+      if (!modal || !panel || !title) return;
+
+      if (!quickModalOpen || !player) {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+        panel.innerHTML = "";
+        return;
+      }
+
+      title.textContent = `${player.seat}号 ${player.name}`;
+      panel.innerHTML = quickRecordHtml(player);
+      bindQuickRecordEvents(panel, player);
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
     }
 
     function playerNotesHtml(seat) {
@@ -1973,6 +2101,7 @@
       }
       saveState();
       renderQuickPanel();
+      renderQuickModal();
     }
 
     function toggleFinalTag(seat, tag) {
@@ -1988,9 +2117,9 @@
       renderAll();
     }
 
-    function saveQuickNote() {
+    function saveQuickNote(root = document) {
       const player = playerBySeat(state.selectedSeat);
-      const text = document.querySelector("#quickNoteText")?.value.trim() || "";
+      const text = root.querySelector("#quickNoteText")?.value.trim() || "";
       if (!player || (!state.pendingTags.length && !text)) return;
 
       const noteId = Date.now();
@@ -2502,6 +2631,7 @@
       renderLabels();
       renderBoard();
       renderQuickPanel();
+      renderQuickModal();
       renderSetup();
       renderVoteControls();
       renderVoteOverview();
@@ -2592,6 +2722,10 @@
       document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => setView(tab.dataset.view)));
       document.querySelectorAll(".phase-chip").forEach((chip) => chip.addEventListener("click", () => setPhase(chip.dataset.phase)));
       document.querySelectorAll("[data-mobile-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.mobileView)));
+      document.querySelector("#closeQuickModalBtn").addEventListener("click", () => closeQuickModal());
+      document.querySelector("#quickModal").addEventListener("click", (event) => {
+        if (event.target.id === "quickModal") closeQuickModal();
+      });
 
       document.querySelector("#fillExampleBtn").addEventListener("click", applyExampleGame);
       document.querySelector("#toggleRevealBtn").addEventListener("click", () => {
@@ -2609,6 +2743,7 @@
         if (!confirm("确定清空本局记录吗？")) return;
         state = defaultState();
         selectedVoters = new Set();
+        quickModalOpen = false;
         saveState();
         renderAll();
         showToast("本局已清空");
@@ -2677,6 +2812,10 @@
       });
 
       document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && quickModalOpen) {
+          closeQuickModal();
+          return;
+        }
         const tag = event.target.tagName.toLowerCase();
         if (["input", "textarea", "select"].includes(tag)) return;
         const map = { "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "0": 10, "-": 11, "=": 12 };
