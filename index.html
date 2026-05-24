@@ -1224,7 +1224,6 @@
 
     <section class="phase-strip" aria-label="阶段切换">
       <label>阶段</label>
-      <button class="phase-chip" type="button" data-phase="开局">开局</button>
       <button class="phase-chip is-active" type="button" data-phase="警上">警上</button>
       <button class="phase-chip" type="button" data-phase="第一天白天">第一天白天</button>
       <button class="phase-chip" type="button" data-phase="第二天白天">第二天白天</button>
@@ -1522,16 +1521,8 @@
       "第一天白天", "第二天白天", "第三天白天", "第四天白天",
       "第五天白天", "第六天白天", "第七天白天"
     ];
-    const phases = ["开局", "警上", ...dayPhases];
+    const phases = ["警上", ...dayPhases];
     const votePhases = ["警徽", ...dayPhases];
-
-    const phaseTags = {
-      "开局": ["上警", "警下", "首置位", "末置位", "身份高", "身份低"],
-      "警上": ["跳预", "退水", "发金水", "发查杀", "认民", "站边", "打某人", "保某人", "对跳", "炸身份", "聊爆", "像好人", "像狼"],
-      "白天": ["归票", "跟票", "改票", "盘狼坑", "盘神坑", "打冲锋", "倒钩", "划水", "保人", "抗推位", "身份拍出"],
-      "投票": ["投出", "弃票", "分票", "冲票", "绑票", "警徽流", "PK发言", "票型异常"],
-      "终局": ["自爆", "拍刀", "认狼", "身份坐实", "胜负手", "复盘重点", "失误点", "MVP"]
-    };
 
     const boardPresets = [
       {
@@ -1864,16 +1855,6 @@
       if (phase === "白天" || phase === "投票" || phase === "终局") return "第一天白天";
       if (String(phase || "").includes("晚")) return "第一天白天";
       return "警上";
-    }
-
-    function phaseKind(phase) {
-      if (phase === "开局" || phase === "警上") return phase;
-      if (phase.includes("白天")) return "白天";
-      return "白天";
-    }
-
-    function tagsForPhase(phase) {
-      return phaseTags[phaseKind(phase)] || [];
     }
 
     function roleFaction(role) {
@@ -2327,7 +2308,6 @@
             <span class="eyebrow" style="margin:0">快速记录</span>
             <strong>${player.seat}号 ${escapeHtml(player.name)}</strong>
           </div>
-          <button class="btn ghost" type="button" id="clearPendingBtn">清标签</button>
         </div>
 
         <div class="field-grid">
@@ -2346,23 +2326,12 @@
         </div>
 
         <div style="margin-top:12px">
-          <label>归总听感</label>
+          <label>归总听感 / 标签</label>
           <div class="quick-actions" style="margin-top:7px">
             ${reads.map((read) => `<button class="chip ${read === player.read ? "is-selected" : ""}" type="button" data-read="${read}">${read}</button>`).join("")}
           </div>
-        </div>
-
-        <div style="margin-top:12px">
-          <label>归总标签</label>
           <div class="chips" style="margin-top:7px">
             ${summaryTags.map((tag) => `<button class="chip ${player.finalTags?.includes(tag) ? "is-selected" : ""} ${tagClass(tag)}" type="button" data-final-tag="${tag}">${tag}</button>`).join("")}
-          </div>
-        </div>
-
-        <div style="margin-top:12px">
-          <label>${state.phase}常用标签</label>
-          <div class="chips" style="margin-top:7px">
-            ${tagsForPhase(state.phase).map((tag) => `<button class="chip ${state.pendingTags.includes(tag) ? "is-selected" : ""} ${tagClass(tag)}" type="button" data-tag="${tag}">${tag}</button>`).join("")}
           </div>
         </div>
 
@@ -2404,9 +2373,6 @@
       panel.querySelectorAll("[data-final-tag]").forEach((button) => {
         button.addEventListener("click", () => toggleFinalTag(player.seat, button.dataset.finalTag));
       });
-      panel.querySelectorAll("[data-tag]").forEach((button) => {
-        button.addEventListener("click", () => togglePendingTag(button.dataset.tag));
-      });
       panel.querySelectorAll("[data-status-shortcut]").forEach((button) => {
         button.addEventListener("click", () => updatePlayerStatus(player.seat, button.dataset.statusShortcut));
       });
@@ -2415,12 +2381,6 @@
       });
       panel.querySelectorAll("[data-delete-note]").forEach((button) => {
         button.addEventListener("click", () => deleteNote(Number(button.dataset.deleteNote)));
-      });
-      panel.querySelector("#clearPendingBtn").addEventListener("click", () => {
-        state.pendingTags = [];
-        saveState();
-        renderQuickPanel();
-        renderQuickModal();
       });
       panel.querySelector("#saveNoteBtn").addEventListener("click", () => saveQuickNote(panel));
       panel.querySelector("#sheriffBtn").addEventListener("click", () => toggleSheriff(player.seat));
@@ -2559,17 +2519,6 @@
       showToast(`${playerLabel(seat)} 已标记为 ${status}`);
     }
 
-    function togglePendingTag(tag) {
-      if (state.pendingTags.includes(tag)) {
-        state.pendingTags = state.pendingTags.filter((item) => item !== tag);
-      } else {
-        state.pendingTags.push(tag);
-      }
-      saveState();
-      renderQuickPanel();
-      renderQuickModal();
-    }
-
     function toggleFinalTag(seat, tag) {
       const player = playerBySeat(seat);
       if (!player) return;
@@ -2586,12 +2535,12 @@
     function saveQuickNote(root = document) {
       const player = playerBySeat(state.selectedSeat);
       const text = root.querySelector("#quickNoteText")?.value.trim() || "";
-      if (!player || (!state.pendingTags.length && !text)) return;
+      if (!player || !text) return;
 
       const noteId = Date.now();
       const eventId = noteId + 1;
-      const tagText = state.pendingTags.length ? state.pendingTags.join("、") : "发言";
-      const summary = `${playerLabel(player.seat)}：${tagText}${text ? `；${text}` : ""}`;
+      const tagText = "发言";
+      const summary = `${playerLabel(player.seat)}：${tagText}；${text}`;
       state.notes.push({
         id: noteId,
         eventId,
@@ -2599,7 +2548,7 @@
         phase: state.phase,
         seat: player.seat,
         target: "",
-        tags: [...state.pendingTags],
+        tags: [],
         text,
         summary
       });
