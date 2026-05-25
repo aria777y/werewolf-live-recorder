@@ -2498,12 +2498,6 @@
             <span>当前发言玩家</span>
             <select id="perspectiveSpeakerSelect">${seatOptions(speaker?.seat || state.selectedSeat, false)}</select>
           </label>
-          <label class="field">
-            <span>逻辑类型</span>
-            <select id="perspectiveTypeSelect">
-              ${["听到信息", "双边逻辑", "好人逻辑", "狼人逻辑", "待验证"].map((type) => `<option ${type === "双边逻辑" ? "selected" : ""}>${type}</option>`).join("")}
-            </select>
-          </label>
         </div>
         <label class="wide-field" style="margin-top:10px">
           <span>我听到的信息</span>
@@ -2575,15 +2569,15 @@
         return;
       }
       const speakerSeat = Number(root.querySelector("#perspectiveSpeakerSelect")?.value) || state.selectedSeat;
-      const type = root.querySelector("#perspectiveTypeSelect")?.value || "双边逻辑";
       const noteId = Date.now();
-      const eventId = noteId + 1;
+      const eventId = noteId + 100;
       const selfSeat = normalizeOptionalSeat(state.selfSeat, state.seatCount);
       const speakerText = playerLabel(speakerSeat);
+      const summaryText = [info, logic].filter(Boolean).join("；");
+      syncPerspectiveToPlayer(speakerSeat, summaryText, info || logic, noteId + 1);
       const textParts = [
         selfSeat ? `我是${playerLabel(selfSeat)}` : "本人视角",
         `听${speakerText}`,
-        type,
         info ? `信息：${info}` : "",
         logic ? `逻辑：${logic}` : ""
       ].filter(Boolean);
@@ -2594,7 +2588,7 @@
         phase: state.phase,
         selfSeat,
         speakerSeat,
-        type,
+        type: "本人视角",
         info,
         logic
       });
@@ -2611,6 +2605,62 @@
       saveState();
       renderAll();
       showToast("本人视角已保存");
+    }
+
+    function syncPerspectiveToPlayer(speakerSeat, text, readSource = text, ts = Date.now()) {
+      const player = playerBySeat(speakerSeat);
+      if (!player || !text) return;
+      const noteId = ts;
+      const eventId = ts + 1;
+      const tags = tagsFromPerspectiveText(readSource);
+      const read = readFromPerspectiveText(readSource);
+      if (read) player.read = read;
+      tags.forEach((tag) => {
+        player.finalTags = Array.isArray(player.finalTags) ? player.finalTags : [];
+        if (!player.finalTags.includes(tag)) player.finalTags.push(tag);
+      });
+      const summary = `${playerLabel(speakerSeat)}：本人视角；${text}`;
+      state.notes.push({
+        id: noteId,
+        eventId,
+        ts: noteId,
+        phase: state.phase,
+        seat: speakerSeat,
+        target: "",
+        tags: ["本人视角", ...tags],
+        text,
+        summary
+      });
+      state.events.push({
+        id: eventId,
+        noteId,
+        ts: noteId,
+        phase: state.phase,
+        type: "发言",
+        actor: speakerSeat,
+        target: "",
+        text: summary
+      });
+    }
+
+    function readFromPerspectiveText(text) {
+      const value = String(text || "");
+      if (/(铁狼|定狼|狼面大|很狼|是狼|偏狼|坏|不好|进狼坑|狼坑|匪)/.test(value)) return value.includes("铁狼") || value.includes("定狼") || value.includes("是狼") ? "铁狼" : "偏狼";
+      if (/(铁好|定好|好人|偏好|做好|身份高|可信|能放|可放|盘得清|像好)/.test(value)) return value.includes("铁好") || value.includes("定好") ? "铁好" : "偏好";
+      return "";
+    }
+
+    function tagsFromPerspectiveText(text) {
+      const value = String(text || "");
+      const tags = [];
+      if (/(身份高|做好|好人|铁好|偏好|可放|盘得清|可信)/.test(value)) tags.push("身份高");
+      if (/(身份低|不好|偏狼|铁狼|狼坑|定狼|坏|匪)/.test(value)) tags.push("身份低");
+      if (/(信息|视角|验|金水|查杀|银水)/.test(value)) tags.push("信息位");
+      if (/(抗推|焦点|扛推)/.test(value)) tags.push("抗推位");
+      if (/(重点|盯|进坑|狼坑)/.test(value)) tags.push("重点盯");
+      if (/(冲|冲锋|带票)/.test(value)) tags.push("冲锋");
+      if (/(倒钩|钩)/.test(value)) tags.push("倒钩");
+      return [...new Set(tags)];
     }
 
     function deletePerspectiveNote(noteId) {
