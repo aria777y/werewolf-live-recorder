@@ -1728,16 +1728,16 @@
     const examplePlayers = [
       ["杨", "猎人", "猎人", "偏好"],
       ["太阳", "民", "女巫", "偏好"],
-      ["小头", "未标", "民", "未知"],
+      ["小头", "民", "民", "未知"],
       ["清醒", "民", "民", "偏好"],
-      ["十叶", "预言家", "守卫", "偏好"],
-      ["鸽子", "未标", "狼", "偏狼"],
+      ["十叶", "通灵师", "守卫", "偏好"],
+      ["鸽子", "通灵师", "狼", "偏狼"],
       ["wha", "民", "通灵师", "偏好"],
       ["美女1", "未标", "狼", "偏狼"],
       ["美女2", "未标", "狼", "偏狼"],
       ["龙", "未标", "机械狼", "偏狼"],
-      ["w", "预言家", "民", "未知"],
-      ["美女3", "未标", "民", "未知"]
+      ["w", "通灵师", "民", "未知"],
+      ["美女3", "民", "民", "未知"]
     ];
 
     let state = loadState();
@@ -3327,12 +3327,11 @@
       state.roleConfig = [
         { faction: "wolf", role: "狼", count: 3 },
         { faction: "wolf", role: "机械狼", count: 1 },
-        { faction: "god", role: "预言家", count: 1 },
         { faction: "god", role: "女巫", count: 1 },
         { faction: "god", role: "猎人", count: 1 },
         { faction: "god", role: "守卫", count: 1 },
         { faction: "god", role: "通灵师", count: 1 },
-        { faction: "civil", role: "民", count: 3 }
+        { faction: "civil", role: "民", count: 4 }
       ];
       state.ruleNotes = {
         god: "示例：女巫、猎人、守卫、通灵师按线下约定执行。",
@@ -3353,29 +3352,40 @@
       state.players[1].status = "放逐";
       state.players[0].status = "刀死";
       state.players[6].status = "枪带";
+      state.players[7].status = "自爆";
       state.players[3].status = "刀死";
+      state.players[5].status = "自爆";
       state.players[4].status = "刀死";
       state.players[1].phaseStatuses = { "第一天白天": "放逐" };
-      state.players[0].phaseStatuses = { "第一天白天": "刀死" };
-      state.players[6].phaseStatuses = { "第一天白天": "枪带" };
-      state.players[3].phaseStatuses = { "第二天白天": "刀死" };
-      state.players[4].phaseStatuses = { "第二天白天": "刀死" };
+      state.players[0].phaseStatuses = { "第二天白天": "刀死" };
+      state.players[6].phaseStatuses = { "第二天白天": "枪带" };
+      state.players[7].phaseStatuses = { "第二天白天": "自爆" };
+      state.players[3].phaseStatuses = { "第三天白天": "刀死" };
+      state.players[5].phaseStatuses = { "第三天白天": "自爆" };
+      state.players[4].phaseStatuses = { "第四天白天": "刀死" };
       const seed = Date.now();
       state.notes = [
         noteSeed(seed + 1, 10, "警上", ["过麦"], "", "快速过麦到11号"),
-        noteSeed(seed + 2, 11, "警上", ["跳预", "发查杀", "炸身份"], 2, "简短发言，给2发杀"),
+        noteSeed(seed + 2, 11, "警上", ["跳预", "发查杀", "炸身份"], 2, "简短发言，炸身份，给2发杀"),
         noteSeed(seed + 3, 1, "警上", ["站边"], 11, "情绪站11"),
         noteSeed(seed + 4, 2, "警上", ["认民"], "", "警上认民"),
-        noteSeed(seed + 5, 5, "警上", ["跳预", "发金水"], 6, "给6金水"),
-        noteSeed(seed + 6, 8, "警上", ["站边"], 5, "点评后站5")
+        noteSeed(seed + 5, 4, "警上", ["认好"], 2, "认2好"),
+        noteSeed(seed + 6, 5, "警上", ["跳预", "发金水"], 6, "给6发金"),
+        noteSeed(seed + 7, 6, "警上", ["暗跳", "认5", "打人"], 7, "暗跳预认5，打后置位7开对跳"),
+        noteSeed(seed + 8, 7, "警上", ["认民", "带跳"], 11, "说11是通，自己是民，让11dd带跳"),
+        noteSeed(seed + 9, 8, "警上", ["点评", "站边"], 5, "警上点评站5"),
+        noteSeed(seed + 10, 5, "第一天白天", ["归票", "放逐"], 2, "5外楼2出局"),
+        noteSeed(seed + 11, 5, "第二天白天", ["聊爆", "认狼"], "", "抢先发言认双刀大哥，让狼自曝拼刀")
       ];
       state.events = [
         ...state.notes.map((note) => ({ id: note.id + 100, ts: note.ts, phase: note.phase, type: "发言", actor: note.seat, target: note.target, text: note.summary })),
-        { id: seed + 20, ts: seed + 20, phase: "警上", type: "警长", actor: 5, target: "", text: "5号十叶9票当选警长，11号退水" },
+        { id: seed + 20, ts: seed + 20, phase: "警徽", type: "警长", actor: 5, target: "", text: "1、4、5、6、11争警徽；3票11，9票5；11退水，5号十叶当选" },
         { id: seed + 21, ts: seed + 21, phase: "第一天白天", type: "放逐", actor: 2, target: "", text: "5号外楼归票2号，2号出局" },
-        { id: seed + 22, ts: seed + 22, phase: "第一天白天", type: "刀死", actor: 1, target: 7, text: "狼人刀1号，1号猎人带走7号" },
-        { id: seed + 23, ts: seed + 23, phase: "第二天白天", type: "自爆", actor: 8, target: 4, text: "8号自爆刀4号" },
-        { id: seed + 24, ts: seed + 24, phase: "第二天白天", type: "自爆", actor: 9, target: 5, text: "9号自爆刀5号，狼人胜" }
+        { id: seed + 22, ts: seed + 22, phase: "第二天白天", type: "刀死", actor: 1, target: 7, text: "狼人刀1号，1号猎人带走7号" },
+        { id: seed + 23, ts: seed + 23, phase: "第二天白天", type: "自爆", actor: 8, target: "", text: "8号自爆，狼人继续拼刀" },
+        { id: seed + 24, ts: seed + 24, phase: "第三天白天", type: "刀死", actor: 4, target: "", text: "狼人刀4号" },
+        { id: seed + 25, ts: seed + 25, phase: "第三天白天", type: "自爆", actor: 6, target: "", text: "6号自爆" },
+        { id: seed + 26, ts: seed + 26, phase: "第四天白天", type: "刀死", actor: 5, target: "", text: "狼人刀5号，狼人胜" }
       ];
       state.votes = [
         { id: seed + 30, ts: seed + 30, phase: "警徽", round: "警徽票", target: 11, voters: [1, 4, 11] },
