@@ -2330,7 +2330,10 @@
     }
 
     function lockedStatusInfo(player, phase = state.phase) {
-      return phaseStatusRecordFor(player, phase);
+      const currentIndex = phaseIndex(phase);
+      const entries = phaseStatusEntries(player)
+        .filter(([entryPhase]) => phaseIndex(entryPhase) < currentIndex);
+      return entries.length ? entries[entries.length - 1] : null;
     }
 
     function phaseStatusEntries(player) {
