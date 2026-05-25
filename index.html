@@ -1786,6 +1786,7 @@
         seat: index + 1,
         name: `${index + 1}号`,
         claimRole: "未标",
+        claimRoles: [],
         trueRole: "未标",
         read: "未知",
         finalTags: [],
@@ -2020,10 +2021,15 @@
         const existing = bySeat.get(seat) || {};
         const phaseStatuses = normalizePhaseStatuses(existing.phaseStatuses);
         const legacyStatus = statusValue(existing.status);
+        const rawClaimRoles = [
+          ...(Array.isArray(existing.claimRoles) ? existing.claimRoles : []),
+          existing.claimRole && existing.claimRole !== "未标" ? existing.claimRole : ""
+        ].filter(Boolean);
         return {
           seat,
           name: `${seat}号`,
           claimRole: "未标",
+          claimRoles: [],
           trueRole: "未标",
           read: "未知",
           finalTags: [],
@@ -2031,6 +2037,8 @@
           phaseStatuses: {},
           sheriff: false,
           ...existing,
+          claimRole: rawClaimRoles[0] || "未标",
+          claimRoles: rawClaimRoles,
           status: latestStatusFromPhaseStatuses(phaseStatuses) || (isOutStatus(legacyStatus) ? legacyStatus : "在场"),
           phaseStatuses,
           finalTags: Array.isArray(existing.finalTags) ? existing.finalTags : []
@@ -2409,8 +2417,8 @@
         const latestNote = latestNotesFor(player.seat, 1)[0];
         const noteText = noteDisplayText(latestNote, player.seat);
         const listenLine = state.revealRoles
-          ? `听感：${player.claimRole} · ${player.read} / 真：${player.trueRole}`
-          : `听感：${player.claimRole} · ${player.read}`;
+          ? `听感：${claimRoleLabel(player)} · ${player.read} / 真：${player.trueRole}`
+          : `听感：${claimRoleLabel(player)} · ${player.read}`;
         const statusClass = isOutStatus(currentStatus) ? "dead" : readClass(player.read);
         return `
           <article class="player-card ${player.seat === state.selectedSeat ? "is-selected" : ""} ${statusClass === "dead" ? "is-out" : ""}"
@@ -2575,6 +2583,7 @@
       const speakerText = playerLabel(speakerSeat);
       const summaryText = [info, logic].filter(Boolean).join("；");
       syncPerspectiveToPlayer(speakerSeat, summaryText, info || logic, noteId + 1);
+      syncSheriffFromPerspective(speakerSeat, summaryText, noteId + 3);
       const textParts = [
         selfSeat ? `我是${playerLabel(selfSeat)}` : "本人视角",
         `听${speakerText}`,
@@ -2614,7 +2623,13 @@
       const eventId = ts + 1;
       const tags = tagsFromPerspectiveText(readSource);
       const read = readFromPerspectiveText(readSource);
+      const claimRoles = claimRolesFromPerspectiveText(readSource);
       if (read) player.read = read;
+      if (claimRoles.length) {
+        const mergedRoles = [...claimRolesFor(player), ...claimRoles];
+        player.claimRoles = sanitizeClaimRoles(mergedRoles);
+        player.claimRole = player.claimRoles[0] || "未标";
+      }
       tags.forEach((tag) => {
         player.finalTags = Array.isArray(player.finalTags) ? player.finalTags : [];
         if (!player.finalTags.includes(tag)) player.finalTags.push(tag);
@@ -2643,11 +2658,90 @@
       });
     }
 
+    function syncSheriffFromPerspective(speakerSeat, text, ts = Date.now()) {
+      const sheriffSeat = sheriffSeatFromPerspectiveText(speakerSeat, text);
+      if (!sheriffSeat) return;
+      const currentSheriff = activePlayers().find((player) => player.sheriff)?.seat || "";
+      if (currentSheriff === sheriffSeat) return;
+      state.players.forEach((player) => { player.sheriff = player.seat === sheriffSeat; });
+      state.events.push({
+        id: ts,
+        ts,
+        phase: state.phase,
+        type: "警长",
+        actor: sheriffSeat,
+        target: "",
+        text: `本人视角识别：${playerLabel(sheriffSeat)} 为警长`
+      });
+    }
+
+    function sheriffSeatFromPerspectiveText(speakerSeat, text) {
+      const value = String(text || "").replace(/\s+/g, "");
+      if (!/(警长|警徽(?!流)|拿徽)/.test(value)) return "";
+      const patterns = [
+        /(?:警长|警徽(?!流)|拿徽)(?:是|给到|给|归给|归|到|在|为)?([1-9]|1[0-5])号?/,
+        /([1-9]|1[0-5])号?(?:是|当选|当|拿到|拿|接|成为|做)?(?:警长|警徽(?!流)|拿徽)/
+      ];
+      for (const pattern of patterns) {
+        const match = value.match(pattern);
+        const seat = match ? normalizeOptionalSeat(match[1], state.seatCount) : "";
+        if (seat) return seat;
+      }
+      if (/(我|自己|本人)(?:是|拿到|拿|有|接)?(?:警长|警徽(?!流)|拿徽)|(?:警长|警徽(?!流)|拿徽)(?:是|在)?我/.test(value)) {
+        return normalizeOptionalSeat(speakerSeat, state.seatCount);
+      }
+      return "";
+    }
+
     function readFromPerspectiveText(text) {
       const value = String(text || "");
       if (/(铁狼|定狼|狼面大|很狼|是狼|偏狼|坏|不好|进狼坑|狼坑|匪)/.test(value)) return value.includes("铁狼") || value.includes("定狼") || value.includes("是狼") ? "铁狼" : "偏狼";
       if (/(铁好|定好|好人|偏好|做好|身份高|可信|能放|可放|盘得清|像好)/.test(value)) return value.includes("铁好") || value.includes("定好") ? "铁好" : "偏好";
       return "";
+    }
+
+    function roleMatchersFor(role) {
+      const matcherMap = {
+        狼: [/认狼|跳狼|是狼|定狼|铁狼|像狼|偏狼|狼面|狼牌/],
+        机械狼: [/机械狼|机狼/],
+        狼王: [/狼王/],
+        狼美人: [/狼美人|狼美/],
+        石像鬼: [/石像鬼/],
+        觉醒石像鬼: [/觉醒石像鬼|觉醒石像/],
+        怪盗狼王: [/怪盗狼王|怪盗/],
+        预言家: [/预言家|跳预|真预|悍跳预|预面/],
+        女巫: [/女巫|跳女巫|女巫牌/],
+        猎人: [/猎人|跳猎|枪牌|带枪/],
+        守卫: [/守卫|跳守卫|守卫牌/],
+        白痴: [/白痴|跳白痴|白痴牌/],
+        骑士: [/骑士|跳骑士|骑士牌/],
+        通灵师: [/通灵师|跳通|真通|通牌/],
+        摄梦人: [/摄梦人|摄梦|梦游/],
+        魔术师: [/魔术师|魔术/],
+        守墓人: [/守墓人|守墓/],
+        侦探: [/侦探/],
+        警犬: [/警犬/],
+        混血儿: [/混血儿|混血/],
+        熊: [/熊|熊牌/],
+        白猫: [/白猫/],
+        河豚: [/河豚/],
+        民: [/认民|是民|平民|村民|民牌|像民|好民/],
+        丘比特: [/丘比特/],
+        盗贼: [/盗贼/],
+        野孩子: [/野孩子/],
+        咒狐: [/咒狐/],
+        三方: [/三方|第三方/],
+        其他: [/其他/]
+      };
+      return matcherMap[role] || [new RegExp(escapeRegExp(role))];
+    }
+
+    function claimRolesFromPerspectiveText(text, gameState = state) {
+      const value = String(text || "");
+      if (!value) return [];
+      return configuredRolesFor(gameState)
+        .filter((role) => role !== "未标")
+        .filter((role) => roleMatchersFor(role).some((pattern) => pattern.test(value)));
     }
 
     function tagsFromPerspectiveText(text) {
@@ -2689,10 +2783,10 @@
         </div>
 
         <div class="field-grid">
-          <label class="field">
-            <span>听感身份</span>
-            <select id="quickClaimRole">${roleOptions(player.claimRole)}</select>
-          </label>
+          <div class="wide-field">
+            <span>听感身份（可多选）</span>
+            <div class="chips" style="margin-top:5px">${claimRoleChipsHtml(player)}</div>
+          </div>
           <label class="field">
             <span>真实身份</span>
             <select id="quickTrueRole">${roleOptions(player.trueRole)}</select>
@@ -2745,7 +2839,10 @@
     }
 
     function bindQuickRecordEvents(panel, player) {
-      panel.querySelector("#quickClaimRole").addEventListener("change", (event) => updatePlayer(player.seat, { claimRole: event.target.value }));
+      panel.querySelectorAll("[data-claim-role]").forEach((button) => {
+        button.addEventListener("click", () => toggleClaimRole(player.seat, button.dataset.claimRole));
+      });
+      panel.querySelector("[data-clear-claim-roles]")?.addEventListener("click", () => updatePlayer(player.seat, { claimRoles: [] }));
       panel.querySelector("#quickTrueRole").addEventListener("change", (event) => updatePlayer(player.seat, { trueRole: event.target.value }));
       panel.querySelector("#quickStatus").addEventListener("change", (event) => updatePlayerStatus(player.seat, event.target.value));
       panel.querySelectorAll("[data-read]").forEach((button) => {
@@ -2885,13 +2982,42 @@
       return configuredRolesFor(gameState).includes(role) ? role : "未标";
     }
 
+    function escapeRegExp(value) {
+      return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function sanitizeClaimRoles(roles, gameState = state) {
+      const availableRoles = configuredRolesFor(gameState).filter((role) => role !== "未标");
+      const values = Array.isArray(roles) ? roles : [roles];
+      return [...new Set(values
+        .flatMap((role) => String(role || "").split(/[、/]/))
+        .map((role) => role.trim())
+        .filter((role) => availableRoles.includes(role)))];
+    }
+
+    function claimRolesFor(player, gameState = state) {
+      if (!player) return [];
+      const rawRoles = Array.isArray(player.claimRoles) && player.claimRoles.length
+        ? player.claimRoles
+        : (player.claimRole && player.claimRole !== "未标" ? [player.claimRole] : []);
+      return sanitizeClaimRoles(rawRoles, gameState);
+    }
+
+    function claimRoleLabel(player, gameState = state) {
+      const roles = claimRolesFor(player, gameState);
+      return roles.length ? roles.join("/") : "未标";
+    }
+
     function normalizePlayerRolesForBoard(gameState = state) {
-      const availableRoles = configuredRolesFor(gameState);
-      gameState.players = (gameState.players || []).map((player) => ({
-        ...player,
-        claimRole: availableRoles.includes(player.claimRole) ? player.claimRole : "未标",
-        trueRole: availableRoles.includes(player.trueRole) ? player.trueRole : "未标"
-      }));
+      gameState.players = (gameState.players || []).map((player) => {
+        const claimRoles = claimRolesFor(player, gameState);
+        return {
+          ...player,
+          claimRoles,
+          claimRole: claimRoles[0] || "未标",
+          trueRole: safeConfiguredRole(player.trueRole, gameState)
+        };
+      });
     }
 
     function roleOptions(selected) {
@@ -2899,14 +3025,45 @@
       return configuredRolesFor().map((role) => `<option ${role === safeSelected ? "selected" : ""}>${role}</option>`).join("");
     }
 
+    function claimRoleChipsHtml(player) {
+      const selectedRoles = claimRolesFor(player);
+      const chips = configuredRolesFor()
+        .filter((role) => role !== "未标")
+        .map((role) => {
+          const isSelected = selectedRoles.includes(role);
+          return `<button class="chip summary-tag ${isSelected ? "is-selected" : ""}" type="button" data-claim-role="${escapeHtml(role)}" aria-pressed="${isSelected ? "true" : "false"}">${escapeHtml(role)}</button>`;
+        })
+        .join("");
+      return `${chips}<button class="chip" type="button" data-clear-claim-roles>未标</button>`;
+    }
+
     function updatePlayer(seat, patch) {
       const player = playerBySeat(seat);
-      if ("claimRole" in patch) patch.claimRole = safeConfiguredRole(patch.claimRole);
-      if ("trueRole" in patch) patch.trueRole = safeConfiguredRole(patch.trueRole);
-      Object.assign(player, patch);
+      if (!player) return;
+      const safePatch = { ...patch };
+      if ("claimRoles" in safePatch) {
+        safePatch.claimRoles = sanitizeClaimRoles(safePatch.claimRoles);
+        safePatch.claimRole = safePatch.claimRoles[0] || "未标";
+      } else if ("claimRole" in safePatch) {
+        safePatch.claimRoles = sanitizeClaimRoles(safePatch.claimRole);
+        safePatch.claimRole = safePatch.claimRoles[0] || "未标";
+      }
+      if ("trueRole" in safePatch) safePatch.trueRole = safeConfiguredRole(safePatch.trueRole);
+      Object.assign(player, safePatch);
       saveState();
       renderAll();
       showToast("玩家信息已更新");
+    }
+
+    function toggleClaimRole(seat, role) {
+      const player = playerBySeat(seat);
+      const safeRole = safeConfiguredRole(role);
+      if (!player || safeRole === "未标") return;
+      const currentRoles = claimRolesFor(player);
+      const nextRoles = currentRoles.includes(safeRole)
+        ? currentRoles.filter((item) => item !== safeRole)
+        : [...currentRoles, safeRole];
+      updatePlayer(seat, { claimRoles: nextRoles });
     }
 
     function updatePlayerStatus(seat, status) {
@@ -3490,7 +3647,7 @@
         return `
           <article class="history-card">
             <h3>${player.seat}号 ${escapeHtml(player.name)}</h3>
-            <p>听感身份：${escapeHtml(player.claimRole)}；最新状态：${escapeHtml(player.status)}${player.sheriff ? "；警长" : ""}；标签：${escapeHtml(finalTags)}</p>
+            <p>听感身份：${escapeHtml(claimRoleLabel(player))}；最新状态：${escapeHtml(player.status)}${player.sheriff ? "；警长" : ""}；标签：${escapeHtml(finalTags)}</p>
             <p>阶段状态：${escapeHtml(phaseStatusSummary(player))}</p>
             <p>${escapeHtml(compactText(topNotes, "暂无发言记录"))}</p>
           </article>
@@ -3517,7 +3674,7 @@
       lines.push("## 身份表");
       players.forEach((player) => {
         const finalTags = player.finalTags?.length ? player.finalTags.join("、") : "未标";
-        lines.push(`${player.seat}号 ${player.name}：听感身份${player.claimRole} / 最新状态${player.status}${player.sheriff ? " / 警长" : ""} / 阶段状态${phaseStatusSummary(player)} / 标签${finalTags} / 真${player.trueRole}`);
+        lines.push(`${player.seat}号 ${player.name}：听感身份${claimRoleLabel(player, gameState)} / 最新状态${player.status}${player.sheriff ? " / 警长" : ""} / 阶段状态${phaseStatusSummary(player)} / 标签${finalTags} / 真${player.trueRole}`);
       });
 
       lines.push("");
@@ -3642,6 +3799,7 @@
           ...player,
           name: data[0],
           claimRole: data[1],
+          claimRoles: data[1] === "未标" ? [] : [data[1]],
           trueRole: data[2],
           read: data[3]
         };
