@@ -208,6 +208,10 @@
       border-radius: var(--radius);
     }
 
+    .phase-strip.is-hidden {
+      display: none;
+    }
+
     .phase-strip label {
       color: var(--muted);
       font-size: 13px;
@@ -283,6 +287,204 @@
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 8px;
+    }
+
+    .canvas-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+
+    .canvas-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .canvas-scroll {
+      overflow: auto;
+      max-height: calc(100vh - 310px);
+      min-height: 430px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 252, 246, 0.76);
+    }
+
+    .canvas-table {
+      width: 100%;
+      min-width: 1180px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .canvas-table th,
+    .canvas-table td {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      background: rgba(255, 252, 246, 0.92);
+    }
+
+    .canvas-table th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      padding: 9px;
+      color: var(--muted);
+      background: var(--surface-strong);
+      font-size: 12px;
+      font-weight: 900;
+      text-align: left;
+    }
+
+    .canvas-player-head {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      width: 136px;
+      min-width: 136px;
+      padding: 9px;
+      background: #fffaf0;
+      box-shadow: 8px 0 18px rgba(112, 79, 47, 0.06);
+    }
+
+    .canvas-table thead .canvas-player-head {
+      z-index: 4;
+    }
+
+    .canvas-name-input {
+      width: 100%;
+      min-height: 30px;
+      margin-top: 7px;
+      padding: 6px 8px;
+      font-size: 13px;
+      background: #fffdf8;
+    }
+
+    .canvas-cell {
+      min-width: 170px;
+      width: 170px;
+      padding: 7px;
+    }
+
+    .canvas-cell textarea {
+      width: 100%;
+      min-height: 116px;
+      resize: vertical;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      padding: 5px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .canvas-cell textarea:focus {
+      background: #fffaf0;
+      border-color: transparent;
+      box-shadow: inset 0 0 0 2px rgba(196, 119, 63, 0.22);
+    }
+
+    .canvas-eval {
+      width: 190px;
+      min-width: 190px;
+      padding: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .eval-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .bulk-textarea,
+    .vote-textarea {
+      min-height: 150px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .vote-textarea {
+      min-height: 108px;
+    }
+
+    .role-palette {
+      display: grid;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .role-palette-group {
+      display: grid;
+      gap: 7px;
+    }
+
+    .role-palette-title {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .role-count-row {
+      display: grid;
+      grid-template-columns: minmax(86px, 1fr) 38px 44px 38px;
+      gap: 6px;
+      align-items: center;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 248, 0.74);
+    }
+
+    .role-count-row strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .canvas-row.is-out th,
+    .canvas-row.is-out td {
+      opacity: 0.58;
+      filter: grayscale(0.16);
+    }
+
+    .canvas-muted-cell {
+      min-height: 116px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      background: rgba(246, 236, 219, 0.35);
+    }
+
+    .canvas-stage-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .canvas-stage-bar .chip {
+      pointer-events: none;
+    }
+
+    .quick-status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 7px;
     }
 
     .player-card {
@@ -1109,13 +1311,15 @@
     }
 
     @media (max-width: 1100px) {
-      .hero,
-      .main-grid,
-      .vote-layout,
-      .history-grid,
-      .review-grid {
-        grid-template-columns: 1fr;
-      }
+	      .hero,
+	      .main-grid,
+	      .canvas-top,
+	      .canvas-layout,
+	      .vote-layout,
+	      .history-grid,
+	      .review-grid {
+	        grid-template-columns: 1fr;
+	      }
 
       .hero-side {
         min-width: 0;
@@ -1139,10 +1343,19 @@
         padding: 12px;
       }
 
-      .board {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 6px;
-      }
+	      .board {
+	        grid-template-columns: repeat(3, minmax(0, 1fr));
+	        gap: 6px;
+	      }
+
+	      .canvas-scroll {
+	        max-height: none;
+	        min-height: 360px;
+	      }
+
+	      .canvas-table {
+	        min-width: 1020px;
+	      }
 
       .player-card {
         min-height: 112px;
@@ -1264,7 +1477,7 @@
       <button class="tab" type="button" data-view="history">历史记录</button>
     </nav>
 
-    <section class="phase-strip" aria-label="阶段切换">
+    <section class="phase-strip is-hidden" aria-label="阶段切换">
       <label>阶段</label>
       <button class="phase-chip is-active" type="button" data-phase="警上">警上</button>
       <button class="phase-chip" type="button" data-phase="第一天白天">第一天白天</button>
@@ -1277,36 +1490,91 @@
     </section>
 
     <section class="view is-active" id="view-record">
-      <div class="main-grid">
+      <div class="canvas-top">
         <section class="panel">
           <div class="panel-head">
             <div>
-              <h2 id="boardTitle">12人战术桌盘</h2>
+              <h2 id="boardTitle">实战大画布</h2>
             </div>
-            <p>点玩家，弹窗快速记录</p>
+            <p>按玩家 × 阶段直接记录</p>
           </div>
-          <div class="board" id="playerBoard"></div>
+          <div class="field-grid" style="margin-bottom:10px">
+            <label class="field">
+              <span>我的号码</span>
+              <select id="canvasSelfSeatSelect"></select>
+            </label>
+            <label class="field">
+              <span>当前进程</span>
+              <input id="canvasPhaseLabel" readonly>
+            </label>
+          </div>
+          <label class="wide-field">
+            <span>上警玩家</span>
+            <div class="chips" id="policeSeatList"></div>
+          </label>
+          <div class="quick-actions" style="margin-top:10px">
+            <button class="btn primary" type="button" id="advancePhaseBtn">结束警上，新增第一天白天</button>
+            <button class="btn ghost" type="button" id="clearPoliceBtn">清空上警</button>
+            <button class="btn primary" type="button" data-save-current>保存当前局</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>批量速记 / 票型</h2>
+            </div>
+            <p>粘贴整段记录，自动拆到玩家阶段</p>
+          </div>
+          <label class="wide-field">
+            <span>发言记录粘贴区</span>
+            <textarea class="bulk-textarea" id="bulkRecordInput" placeholder="例如：警上：&#10;1: 跳预，4查杀...&#10;第一天白天&#10;2：听6/10，站1"></textarea>
+          </label>
+          <div class="quick-actions" style="margin-top:10px">
+            <button class="btn primary" type="button" id="parseBulkRecordBtn">解析到大画布</button>
+            <button class="btn ghost" type="button" id="clearBulkRecordBtn">清空输入</button>
+          </div>
+          <label class="wide-field" style="margin-top:10px">
+            <span>票型自然语言</span>
+            <textarea class="vote-textarea" id="voteTextInput" placeholder="例如：4<- 1 3 10 13&#10;1<- 2 4 8 11&#10;4出局"></textarea>
+          </label>
+          <div class="quick-actions" style="margin-top:10px">
+            <button class="btn primary" type="button" id="parseVoteTextBtn">识别票型</button>
+            <button class="btn ghost" type="button" id="voiceVoteBtn">语音票型</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="canvas-layout">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>玩家阶段记录</h2>
+            </div>
+            <p id="canvasHint">警上阶段只允许上警玩家发言；未上警玩家只参与票型。</p>
+          </div>
+          <div id="recordCanvas"></div>
         </section>
 
         <aside class="side-stack">
-          <section class="panel" id="quickPanel"></section>
-          <section class="panel" id="myPerspectivePanel"></section>
           <section class="panel">
             <div class="panel-head">
-              <div>
-                <h3>历史对局</h3>
-              </div>
-              <p>保存后可回看</p>
+              <h3>场上存活</h3>
+              <p>按记录实时统计</p>
             </div>
-            <div class="quick-actions" style="margin-bottom:10px">
-              <button class="btn primary" type="button" data-save-current>保存当前局</button>
+            <div id="aliveSummary"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <h3>玩家标签总览</h3>
+              <p>自动从发言更新</p>
             </div>
-            <div class="saved-game-list" id="recentSavedGames"></div>
+            <div class="summary-list" id="playerEvaluationPanel"></div>
           </section>
           <section class="panel">
             <div class="panel-head">
               <h3>最近记录</h3>
-              <p>自动沉淀复盘线</p>
+              <p>票型会反显到玩家行</p>
             </div>
             <div class="timeline" id="miniTimeline"></div>
           </section>
@@ -1355,20 +1623,9 @@
             <div class="chips board-preset-list" id="boardPresetList"></div>
             <div class="role-config-list" id="roleConfigRows"></div>
             <div class="quick-actions" style="margin-top:10px">
-              <button class="btn primary" type="button" data-add-faction="wolf">添加狼</button>
-              <button class="btn primary" type="button" data-add-faction="god">添加神</button>
-              <button class="btn primary" type="button" data-add-faction="civil">添加民</button>
-              <button class="btn primary" type="button" data-add-faction="third">添加三方</button>
               <button class="btn ghost" type="button" id="fillCivilianBtn">补齐平民</button>
             </div>
           </div>
-          <div class="panel-head" style="margin-top:12px">
-            <div>
-              <h3>桌位玩家名</h3>
-            </div>
-            <p>方桌视图，只填号码对应名字</p>
-          </div>
-          <div class="setup-table" id="setupRows"></div>
         </section>
 
         <aside class="side-stack">
@@ -1551,7 +1808,7 @@
 
     const roleConfigRoles = Object.values(factionRoles).flat();
     const allowedSeatCounts = [11, 12, 13, 14, 15];
-    const reads = ["未知", "偏好", "偏狼", "铁好", "铁狼"];
+    const reads = ["未知", "好", "偏好", "狼", "偏狼"];
     const summaryTags = ["身份高", "身份低", "信息位", "抗推位", "重点盯", "冲锋", "倒钩", "站错边", "盘得清", "可放", "双刀位", "MVP", "失误点"];
     const statuses = ["在场", "出局", "放逐", "刀死", "毒死", "枪带", "自爆"];
     const dayPhases = [
@@ -1792,6 +2049,7 @@
         finalTags: [],
         status: "在场",
         phaseStatuses: {},
+        onPolice: false,
         sheriff: false
       }));
     }
@@ -1832,6 +2090,8 @@
         phase: "警上",
         selectedSeat: 1,
         selfSeat: "",
+        policeSeats: [],
+        activePhases: ["警上"],
         revealRoles: false,
         pendingTags: [],
         players: createPlayers(12),
@@ -1876,6 +2136,12 @@
       };
       gameState.selectedSeat = Math.min(Math.max(Number(gameState.selectedSeat) || 1, 1), seatCount);
       gameState.selfSeat = normalizeOptionalSeat(parsed.selfSeat, seatCount);
+      gameState.policeSeats = normalizeSeatList(parsed.policeSeats || [], seatCount);
+      gameState.activePhases = normalizeActivePhases(parsed.activePhases || ["警上"], gameState);
+      gameState.players.forEach((player) => {
+        player.onPolice = gameState.policeSeats.includes(player.seat) || Boolean(player.onPolice);
+      });
+      gameState.policeSeats = normalizeSeatList(gameState.players.filter((player) => player.onPolice).map((player) => player.seat), seatCount);
       normalizePlayerRolesForBoard(gameState);
       return gameState;
     }
@@ -1920,6 +2186,26 @@
     function normalizeOptionalSeat(seat, seatCount = 12) {
       const parsed = Number(seat);
       return parsed >= 1 && parsed <= seatCount ? parsed : "";
+    }
+
+    function normalizeSeatList(seats, seatCount = 12) {
+      return [...new Set((Array.isArray(seats) ? seats : [])
+        .map(Number)
+        .filter((seat) => seat >= 1 && seat <= seatCount))]
+        .sort((a, b) => a - b);
+    }
+
+    function normalizeActivePhases(activePhases, gameState = state) {
+      const collected = new Set(["警上"]);
+      (Array.isArray(activePhases) ? activePhases : []).forEach((phase) => collected.add(normalizePhase(phase)));
+      (gameState.notes || []).forEach((note) => collected.add(normalizePhase(note.phase)));
+      (gameState.events || []).forEach((event) => {
+        if (!votePhases.includes(event.phase)) collected.add(normalizePhase(event.phase));
+      });
+      (gameState.players || []).forEach((player) => {
+        Object.keys(normalizePhaseStatuses(player.phaseStatuses)).forEach((phase) => collected.add(normalizePhase(phase)));
+      });
+      return phases.filter((phase) => collected.has(phase));
     }
 
     function normalizePhase(phase) {
@@ -2035,6 +2321,7 @@
           finalTags: [],
           status: "在场",
           phaseStatuses: {},
+          onPolice: false,
           sheriff: false,
           ...existing,
           claimRole: rawClaimRoles[0] || "未标",
@@ -2410,41 +2697,339 @@
       if (shouldRender) renderQuickModal();
     }
 
-    function renderBoard() {
-      const board = document.querySelector("#playerBoard");
-      board.innerHTML = activePlayers().map((player) => {
-        const currentStatus = phaseStatusFor(player);
-        const latestNote = latestNotesFor(player.seat, 1)[0];
-        const noteText = noteDisplayText(latestNote, player.seat);
-        const listenLine = state.revealRoles
-          ? `听感：${claimRoleLabel(player)} · ${player.read} / 真：${player.trueRole}`
-          : `听感：${claimRoleLabel(player)} · ${player.read}`;
-        const statusClass = isOutStatus(currentStatus) ? "dead" : readClass(player.read);
-        return `
-          <article class="player-card ${player.seat === state.selectedSeat ? "is-selected" : ""} ${statusClass === "dead" ? "is-out" : ""}"
-            data-seat="${player.seat}" data-read="${escapeHtml(player.read)}" aria-label="${escapeHtml(playerLabel(player.seat))}">
-            <div class="player-top">
-              <span class="seat">${player.seat}号</span>
-              <span class="mini-status ${statusClass}">${player.sheriff ? "警长 · " : ""}${escapeHtml(currentStatus)}</span>
-            </div>
-            <div class="roles">
-              <span>${escapeHtml(listenLine)}</span>
-            </div>
-            <p class="card-note">${escapeHtml(compactText(noteText, "暂无一句话总结"))}</p>
-          </article>
-        `;
-      }).join("");
+    function activeCanvasPhases(gameState = state) {
+      return normalizeActivePhases(gameState.activePhases || ["警上"], gameState);
+    }
 
-      board.querySelectorAll(".player-card").forEach((card) => {
-        card.addEventListener("click", () => {
-          openQuickModal(card.dataset.seat);
-        });
+    function currentCanvasPhase() {
+      const active = activeCanvasPhases();
+      return active[active.length - 1] || "警上";
+    }
+
+    function nextCanvasPhase() {
+      const current = currentCanvasPhase();
+      if (current === "警上") return "第一天白天";
+      const dayIndex = dayPhases.indexOf(current);
+      return dayIndex >= 0 && dayIndex < dayPhases.length - 1 ? dayPhases[dayIndex + 1] : "";
+    }
+
+    function canvasCellText(seat, phase) {
+      const direct = state.notes.find((note) => note.source === "canvas" && note.seat === seat && note.phase === phase);
+      if (direct) return direct.text || "";
+      return state.notes
+        .filter((note) => note.seat === seat && note.phase === phase && shouldShowPlayerNote(note))
+        .map((note) => note.text || String(note.summary || "").replace(`${playerLabel(seat)}：`, ""))
+        .filter(Boolean)
+        .join("\n");
+    }
+
+    function playerCanSpeakInPhase(player, phase) {
+      return phase !== "警上" || player.onPolice;
+    }
+
+    function voteSummaryFor(seat) {
+      const lines = [];
+      (state.votes || []).forEach((vote) => {
+        const roundText = String(vote.round || "").includes(vote.phase) ? vote.round : `${vote.phase}${vote.round}`;
+        if (vote.target === seat) lines.push(`${roundText} 被${vote.voters.length}票`);
+        if ((vote.voters || []).includes(seat)) lines.push(`${vote.phase}投${playerLabel(vote.target)}`);
+      });
+      return lines.slice(-4);
+    }
+
+    function playerEvalChipsHtml(player) {
+      const tags = [
+        ...claimRolesFor(player).map((role) => `身份:${role}`),
+        player.read && player.read !== "未知" ? `听感:${player.read}` : "",
+        ...(player.finalTags || [])
+      ].filter(Boolean);
+      return tags.length
+        ? tags.map((tag) => `<span class="tag ${tagClass(tag.replace(/^身份:|^听感:/, ""))}">${escapeHtml(tag)}</span>`).join("")
+        : `<span class="tag">未标</span>`;
+    }
+
+    function renderBoard() {
+      const canvas = document.querySelector("#recordCanvas");
+      if (!canvas) return;
+      state.activePhases = activeCanvasPhases();
+      state.phase = currentCanvasPhase();
+
+      const selfSelect = document.querySelector("#canvasSelfSeatSelect");
+      if (selfSelect) selfSelect.innerHTML = seatOptions(state.selfSeat, true);
+      if (selfSelect) selfSelect.value = state.selfSeat || "";
+      const phaseLabel = document.querySelector("#canvasPhaseLabel");
+      if (phaseLabel) phaseLabel.value = currentCanvasPhase();
+      const advanceButton = document.querySelector("#advancePhaseBtn");
+      const nextPhase = nextCanvasPhase();
+      if (advanceButton) advanceButton.textContent = nextPhase ? `结束${currentCanvasPhase()}，新增${nextPhase}` : "已到最后一天";
+      if (advanceButton) advanceButton.disabled = !nextPhase;
+
+      renderPoliceSeatList();
+      renderAliveSummary();
+      renderPlayerEvaluationPanel();
+
+      const activePhases = activeCanvasPhases();
+      canvas.innerHTML = `
+        <div class="canvas-stage-bar">
+          <span class="role-palette-title">已解锁阶段</span>
+          ${activePhases.map((phase) => `<span class="chip ${phase === currentCanvasPhase() ? "is-selected" : ""}">${escapeHtml(phase)}</span>`).join("")}
+        </div>
+        <div class="canvas-scroll">
+          <table class="canvas-table">
+            <thead>
+              <tr>
+                <th class="canvas-player-head">玩家</th>
+                ${activePhases.map((phase) => `<th>${escapeHtml(phase)}</th>`).join("")}
+                <th>身份 / 标签 / 状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${activePlayers().map((player) => {
+                const latestStatus = phaseStatusFor(player, currentCanvasPhase());
+                const isOut = isOutStatus(latestStatus) || isOutStatus(player.status);
+                const voteLines = voteSummaryFor(player.seat);
+                return `
+                  <tr class="canvas-row ${isOut ? "is-out" : ""}" data-seat="${player.seat}">
+                    <th class="canvas-player-head">
+                      <span class="seat">${player.seat}号</span>
+                      <input class="canvas-name-input" data-canvas-name="${player.seat}" value="${escapeHtml(player.name)}" placeholder="${player.seat}号玩家名">
+                      <div class="quick-actions" style="margin-top:6px">
+                        <button class="chip ${player.onPolice ? "is-selected" : ""}" type="button" data-police-seat="${player.seat}">${player.onPolice ? "上警" : "未上警"}</button>
+                      </div>
+                    </th>
+                    ${activePhases.map((phase) => {
+                      const canSpeak = playerCanSpeakInPhase(player, phase);
+                      return `
+                        <td class="canvas-cell">
+                          ${canSpeak ? `
+                            <textarea data-canvas-note data-seat="${player.seat}" data-phase="${escapeHtml(phase)}" placeholder="${player.seat}号 ${escapeHtml(phase)} 发言">${escapeHtml(canvasCellText(player.seat, phase))}</textarea>
+                          ` : `<div class="canvas-muted-cell">未上警<br>只记录警徽投票</div>`}
+                        </td>
+                      `;
+                    }).join("")}
+                    <td class="canvas-eval">
+                      <strong>${player.sheriff ? "警长 · " : ""}${escapeHtml(latestStatus)}</strong>
+                      <div class="eval-line">${playerEvalChipsHtml(player)}</div>
+                      ${voteLines.length ? `<p class="card-note" style="margin-top:7px">${escapeHtml(voteLines.join(" / "))}</p>` : ""}
+                      <div class="quick-status-row">
+                        ${["在场", "放逐", "刀死", "毒死", "枪带", "自爆"].map((status) => `<button class="chip" type="button" data-canvas-status="${status}" data-seat="${player.seat}">${status}</button>`).join("")}
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      bindCanvasEvents(canvas);
+    }
+
+    function renderPoliceSeatList() {
+      const list = document.querySelector("#policeSeatList");
+      if (!list) return;
+      list.innerHTML = activePlayers().map((player) => `
+        <button class="chip ${player.onPolice ? "is-selected" : ""}" type="button" data-police-seat="${player.seat}">${player.seat}号 ${escapeHtml(player.name)}</button>
+      `).join("");
+      list.querySelectorAll("[data-police-seat]").forEach((button) => {
+        button.addEventListener("click", () => togglePoliceSeat(Number(button.dataset.policeSeat)));
       });
     }
 
+    function renderAliveSummary() {
+      const summary = document.querySelector("#aliveSummary");
+      if (!summary) return;
+      const players = activePlayers();
+      const outPlayers = players.filter((player) => isOutStatus(player.status));
+      const alivePlayers = players.filter((player) => !isOutStatus(player.status));
+      const wolfTotal = state.roleConfig
+        .filter((item) => item.faction === "wolf")
+        .reduce((sum, item) => sum + Number(item.count || 0), 0);
+      const outWolfKnown = outPlayers.filter((player) => {
+        if (roleFaction(player.trueRole) === "wolf") return true;
+        return claimRolesFor(player).some((role) => roleFaction(role) === "wolf");
+      }).length;
+      const outRoleText = outPlayers.length
+        ? outPlayers.map((player) => `${playerLabel(player.seat)} ${player.trueRole !== "未标" ? player.trueRole : claimRoleLabel(player)}`).join("、")
+        : "暂无";
+      summary.innerHTML = `
+        <div class="history-card">
+          <p><b>存活</b>：${alivePlayers.length} / ${players.length}</p>
+          <p><b>出局</b>：${outPlayers.length} 人</p>
+          <p><b>狼人剩余</b>：约 ${Math.max(0, wolfTotal - outWolfKnown)} / ${wolfTotal}（按已知身份扣除）</p>
+          <p><b>已出局身份</b>：${escapeHtml(outRoleText)}</p>
+        </div>
+      `;
+    }
+
+    function renderPlayerEvaluationPanel() {
+      const panel = document.querySelector("#playerEvaluationPanel");
+      if (!panel) return;
+      panel.innerHTML = activePlayers().map((player) => {
+        const latest = latestNotesFor(player.seat, 1)[0];
+        return `
+          <article class="history-card ${isOutStatus(player.status) ? "is-out" : ""}">
+            <h3>${player.seat}号 ${escapeHtml(player.name)}</h3>
+            <p>${player.sheriff ? "警长；" : ""}状态：${escapeHtml(player.status)}；身份：${escapeHtml(claimRoleLabel(player))}；听感：${escapeHtml(player.read)}</p>
+            <div class="eval-line">${playerEvalChipsHtml(player)}</div>
+            <p class="card-note" style="margin-top:7px">${escapeHtml(compactText(latest?.text || "", "暂无发言摘要"))}</p>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function bindCanvasEvents(canvas) {
+      canvas.querySelectorAll("[data-canvas-note]").forEach((textarea) => {
+        textarea.addEventListener("change", () => {
+          saveCanvasNote(Number(textarea.dataset.seat), textarea.dataset.phase, textarea.value);
+        });
+      });
+      canvas.querySelectorAll("[data-canvas-name]").forEach((input) => {
+        input.addEventListener("change", () => updatePlayer(Number(input.dataset.canvasName), { name: input.value }));
+      });
+      canvas.querySelectorAll("[data-police-seat]").forEach((button) => {
+        button.addEventListener("click", () => togglePoliceSeat(Number(button.dataset.policeSeat)));
+      });
+      canvas.querySelectorAll("[data-canvas-status]").forEach((button) => {
+        button.addEventListener("click", () => markPlayerStatusFromCanvas(Number(button.dataset.seat), button.dataset.canvasStatus));
+      });
+    }
+
+    function saveCanvasNote(seat, phase, text) {
+      const player = playerBySeat(seat);
+      if (!player) return;
+      const safePhase = normalizePhase(phase);
+      const value = String(text || "").trim();
+      const existing = state.notes.find((note) => note.source === "canvas" && note.seat === seat && note.phase === safePhase);
+      if (!value) {
+        if (existing) state.notes = state.notes.filter((note) => note !== existing);
+        saveState();
+        renderAll();
+        return;
+      }
+      const noteId = existing?.id || Date.now();
+      const eventId = existing?.eventId || noteId + 1;
+      const summary = `${playerLabel(seat)}：${safePhase}；${value}`;
+      const note = {
+        id: noteId,
+        eventId,
+        ts: noteId,
+        source: "canvas",
+        phase: safePhase,
+        seat,
+        target: "",
+        tags: ["阶段记录", ...tagsFromPerspectiveText(value)],
+        text: value,
+        summary
+      };
+      if (existing) Object.assign(existing, note);
+      else state.notes.push(note);
+      applyTextInsightsToPlayer(seat, safePhase, value);
+      upsertEventForNote(note, summary);
+      saveState();
+      renderAll();
+      showToast(`${playerLabel(seat)} ${safePhase}已保存`);
+    }
+
+    function upsertEventForNote(note, summary) {
+      const existing = state.events.find((event) => event.noteId === note.id);
+      const event = {
+        id: note.eventId,
+        noteId: note.id,
+        ts: note.ts,
+        phase: note.phase,
+        type: "发言",
+        actor: note.seat,
+        target: "",
+        text: summary
+      };
+      if (existing) Object.assign(existing, event);
+      else state.events.push(event);
+    }
+
+    function applyTextInsightsToPlayer(seat, phase, text) {
+      const player = playerBySeat(seat);
+      if (!player) return;
+      const claimRoles = claimRolesFromPerspectiveText(text);
+      const read = readFromPerspectiveText(text);
+      const tags = tagsFromPerspectiveText(text);
+      if (claimRoles.length) {
+        player.claimRoles = sanitizeClaimRoles([...claimRolesFor(player), ...claimRoles]);
+        player.claimRole = player.claimRoles[0] || "未标";
+      }
+      if (read) player.read = read;
+      player.finalTags = Array.isArray(player.finalTags) ? player.finalTags : [];
+      tags.forEach((tag) => {
+        if (!player.finalTags.includes(tag)) player.finalTags.push(tag);
+      });
+      const status = statusFromRecordText(text);
+      if (status) setPlayerStatusAtPhase(player, phase, status);
+      syncSheriffFromPerspective(seat, text, Date.now() + Math.floor(Math.random() * 1000));
+    }
+
+    function statusFromRecordText(text) {
+      const value = String(text || "");
+      if (/自爆/.test(value)) return "自爆";
+      if (/枪带|开枪带|带走/.test(value)) return "枪带";
+      if (/毒死|吃毒|被毒/.test(value)) return "毒死";
+      if (/刀死|被刀|吃刀|倒牌|双倒/.test(value)) return "刀死";
+      if (/放逐|出局|被投出|抗推出|归出/.test(value)) return "放逐";
+      return "";
+    }
+
+    function setPlayerStatusAtPhase(player, phase, status) {
+      const safeStatus = statusValue(status);
+      const safePhase = normalizePhase(phase);
+      player.phaseStatuses = normalizePhaseStatuses(player.phaseStatuses);
+      if (safeStatus === "在场") delete player.phaseStatuses[safePhase];
+      else player.phaseStatuses[safePhase] = safeStatus;
+      player.status = latestStatusFromPhaseStatuses(player.phaseStatuses) || "在场";
+    }
+
+    function markPlayerStatusFromCanvas(seat, status) {
+      const player = playerBySeat(seat);
+      if (!player) return;
+      setPlayerStatusAtPhase(player, currentCanvasPhase(), status);
+      addEvent({
+        type: "状态",
+        actor: seat,
+        target: "",
+        text: `${playerLabel(seat)} 在${currentCanvasPhase()}标记为 ${status}`,
+        silent: true
+      });
+      saveState();
+      renderAll();
+      showToast(`${playerLabel(seat)} 状态已更新`);
+    }
+
+    function togglePoliceSeat(seat) {
+      const player = playerBySeat(seat);
+      if (!player) return;
+      player.onPolice = !player.onPolice;
+      state.policeSeats = normalizeSeatList(activePlayers().filter((item) => item.onPolice).map((item) => item.seat), state.seatCount);
+      saveState();
+      renderAll();
+      showToast(`${playerLabel(seat)} 已标记为${player.onPolice ? "上警" : "未上警"}`);
+    }
+
+    function advanceCanvasPhase() {
+      const next = nextCanvasPhase();
+      if (!next) {
+        showToast("已经没有后续白天阶段");
+        return;
+      }
+      state.activePhases = activeCanvasPhases();
+      if (!state.activePhases.includes(next)) state.activePhases.push(next);
+      state.phase = next;
+      saveState();
+      renderAll();
+      showToast(`已新增${next}`);
+    }
+
     function readClass(read) {
-      if (read === "偏狼" || read === "铁狼") return "wolf";
-      if (read === "偏好" || read === "铁好") return "good";
+      if (read === "偏狼" || read === "狼" || read === "铁狼") return "wolf";
+      if (read === "偏好" || read === "好" || read === "铁好") return "good";
       return "";
     }
 
@@ -2457,6 +3042,7 @@
 
     function renderQuickPanel() {
       const panel = document.querySelector("#quickPanel");
+      if (!panel) return;
       const player = playerBySeat(state.selectedSeat);
       if (!player) {
         panel.innerHTML = `<div class="empty">先点一个玩家，再开始记录。</div>`;
@@ -2695,8 +3281,8 @@
 
     function readFromPerspectiveText(text) {
       const value = String(text || "");
-      if (/(铁狼|定狼|狼面大|很狼|是狼|偏狼|坏|不好|进狼坑|狼坑|匪)/.test(value)) return value.includes("铁狼") || value.includes("定狼") || value.includes("是狼") ? "铁狼" : "偏狼";
-      if (/(铁好|定好|好人|偏好|做好|身份高|可信|能放|可放|盘得清|像好)/.test(value)) return value.includes("铁好") || value.includes("定好") ? "铁好" : "偏好";
+      if (/(铁狼|定狼|狼面大|很狼|是狼|偏狼|坏|不好|进狼坑|狼坑|匪)/.test(value)) return value.includes("铁狼") || value.includes("定狼") || value.includes("是狼") ? "狼" : "偏狼";
+      if (/(铁好|定好|好人|偏好|做好|身份高|可信|能放|可放|盘得清|像好|不错)/.test(value)) return value.includes("铁好") || value.includes("定好") || value.includes("好人") ? "好" : "偏好";
       return "";
     }
 
@@ -2712,7 +3298,7 @@
         预言家: [/预言家|跳预|真预|悍跳预|预面/],
         女巫: [/女巫|跳女巫|女巫牌/],
         猎人: [/猎人|跳猎|枪牌|带枪/],
-        守卫: [/守卫|跳守卫|守卫牌/],
+        守卫: [/守卫|跳守卫|守卫牌|跳盾|盾牌/],
         白痴: [/白痴|跳白痴|白痴牌/],
         骑士: [/骑士|跳骑士|骑士牌/],
         通灵师: [/通灵师|跳通|真通|通牌/],
@@ -2747,7 +3333,7 @@
     function tagsFromPerspectiveText(text) {
       const value = String(text || "");
       const tags = [];
-      if (/(身份高|做好|好人|铁好|偏好|可放|盘得清|可信)/.test(value)) tags.push("身份高");
+      if (/(身份高|做好|好人|铁好|偏好|可放|盘得清|可信|强神)/.test(value)) tags.push("身份高");
       if (/(身份低|不好|偏狼|铁狼|狼坑|定狼|坏|匪)/.test(value)) tags.push("身份低");
       if (/(信息|视角|验|金水|查杀|银水)/.test(value)) tags.push("信息位");
       if (/(抗推|焦点|扛推)/.test(value)) tags.push("抗推位");
@@ -3201,6 +3787,7 @@
       renderRoleConfig();
 
       const rows = document.querySelector("#setupRows");
+      if (!rows) return;
       rows.innerHTML = `
         <div class="table-map">
           <div class="table-center">
@@ -3281,6 +3868,9 @@
       state.seatCount = preset.seatCount;
       state.players = normalizePlayers(state.players, preset.seatCount);
       state.selectedSeat = Math.min(state.selectedSeat, preset.seatCount);
+      state.policeSeats = normalizeSeatList(state.policeSeats, preset.seatCount);
+      state.activePhases = ["警上"];
+      state.phase = "警上";
       state.roleConfig = preset.roleConfig.map((item) => ({ ...item }));
       state.ruleNotes = {
         god: preset.ruleNotes?.god || "",
@@ -3295,6 +3885,7 @@
 
     function renderRoleConfig() {
       const list = document.querySelector("#roleConfigRows");
+      if (!list) return;
       const total = roleConfigTotal();
       const preset = boardPresetById(state.preset);
       const targetTotal = preset?.deckSize || state.seatCount;
@@ -3310,57 +3901,58 @@
 
       document.querySelector("#roleConfigStatus").textContent = status;
       document.querySelector("#roleConfigStatus").style.color = diff === 0 ? "var(--good)" : "var(--danger)";
-      list.innerHTML = Object.entries(factionLabels).map(([faction, label]) => {
-        const items = state.roleConfig
-          .map((item, index) => ({ ...item, index }))
-          .filter((item) => item.faction === faction);
-        return `
-          <section class="faction-card" data-faction="${faction}">
-            <div class="faction-head">
-              <strong>${label}</strong>
-              <span class="faction-total">${factionTotal(faction)}人</span>
-            </div>
-            ${items.length ? items.map((item) => `
-              <div class="role-config-row" data-index="${item.index}">
-                <select data-role-index="${item.index}">
-                  ${factionRoles[faction].map((role) => `<option ${role === item.role ? "selected" : ""}>${role}</option>`).join("")}
-                </select>
-                <input type="number" min="0" max="15" value="${item.count}" data-count-index="${item.index}" aria-label="${escapeHtml(item.role)}数量">
-                <button class="btn ghost" type="button" data-remove-role="${item.index}">删</button>
+      list.innerHTML = `<div class="role-palette">
+        ${Object.entries(factionLabels).map(([faction, label]) => {
+          const roles = factionRoles[faction] || [];
+          const factionCount = factionTotal(faction);
+          return `
+            <section class="faction-card" data-faction="${faction}">
+              <div class="faction-head">
+                <strong>${label}</strong>
+                <span class="faction-total">${factionCount}人</span>
               </div>
-            `).join("") : "<div class=\"empty\" style=\"min-height:76px\">未配置</div>"}
-          </section>
-        `;
-      }).join("");
+              <div class="role-palette-group">
+                ${roles.map((role) => {
+                  const count = roleCount(role);
+                  return `
+                    <div class="role-count-row">
+                      <strong>${escapeHtml(role)}</strong>
+                      <button class="chip" type="button" data-role-delta="-1" data-role="${escapeHtml(role)}">-</button>
+                      <span class="tag ${count ? "blue" : ""}">${count}</span>
+                      <button class="chip ${count ? "is-selected" : ""}" type="button" data-role-delta="1" data-role="${escapeHtml(role)}">+</button>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </section>
+          `;
+        }).join("")}
+      </div>`;
 
-      list.querySelectorAll("[data-role-index]").forEach((select) => {
-        select.addEventListener("change", () => {
-          const index = Number(select.dataset.roleIndex);
-          state.preset = "custom";
-          state.roleConfig[index].role = select.value;
-          state.roleConfig[index].faction = roleFaction(select.value);
-          saveState();
-          renderAll();
-        });
+      list.querySelectorAll("[data-role-delta]").forEach((button) => {
+        button.addEventListener("click", () => changeRoleCount(button.dataset.role, Number(button.dataset.roleDelta)));
       });
-      list.querySelectorAll("[data-count-index]").forEach((input) => {
-        input.addEventListener("change", () => {
-          state.preset = "custom";
-          state.roleConfig[Number(input.dataset.countIndex)].count = Math.max(0, Number(input.value) || 0);
-          state.roleConfig = normalizeRoleConfig(state.roleConfig, state.seatCount);
-          saveState();
-          renderAll();
-        });
-      });
-      list.querySelectorAll("[data-remove-role]").forEach((button) => {
-        button.addEventListener("click", () => {
-          state.preset = "custom";
-          state.roleConfig.splice(Number(button.dataset.removeRole), 1);
-          if (!state.roleConfig.length) state.roleConfig.push({ faction: "civil", role: "民", count: state.seatCount });
-          saveState();
-          renderAll();
-        });
-      });
+    }
+
+    function roleCount(role) {
+      return state.roleConfig
+        .filter((item) => item.role === role)
+        .reduce((sum, item) => sum + (Number(item.count) || 0), 0);
+    }
+
+    function changeRoleCount(role, delta) {
+      const safeRole = roleConfigRoles.includes(role) ? role : "民";
+      state.preset = "custom";
+      const existing = state.roleConfig.find((item) => item.role === safeRole);
+      if (!existing && delta > 0) {
+        state.roleConfig.push({ faction: roleFaction(safeRole), role: safeRole, count: 1 });
+      } else if (existing) {
+        existing.count = Math.max(0, Number(existing.count || 0) + delta);
+      }
+      state.roleConfig = normalizeRoleConfig(state.roleConfig, state.seatCount)
+        .filter((item) => Number(item.count) > 0);
+      saveState();
+      renderAll();
     }
 
     function roleConfigTotal() {
@@ -3402,6 +3994,234 @@
       return text || "未配置";
     }
 
+    function phaseFromLine(line, currentPhase = "警上") {
+      const value = String(line || "");
+      if (/警上/.test(value)) return "警上";
+      const day = dayPhases.find((phase) => value.includes(phase));
+      return day || currentPhase;
+    }
+
+    function ensurePhaseUnlocked(phase) {
+      const safePhase = normalizePhase(phase);
+      state.activePhases = activeCanvasPhases();
+      if (!state.activePhases.includes(safePhase)) state.activePhases.push(safePhase);
+      state.activePhases = activeCanvasPhases();
+    }
+
+    function parseBulkRecordInput() {
+      const input = document.querySelector("#bulkRecordInput");
+      const text = input?.value || "";
+      const result = parseBulkRecordText(text);
+      if (!result.records && !result.votes && !result.statuses) {
+        showToast("没有识别到可导入的玩家发言或票型");
+        return;
+      }
+      if (input) input.value = "";
+      saveState();
+      renderAll();
+      showToast(`已导入发言${result.records}条，票型${result.votes}条，状态${result.statuses}条`);
+    }
+
+    function parseBulkRecordText(text) {
+      let currentPhase = "警上";
+      const result = { records: 0, votes: 0, statuses: 0 };
+      String(text || "").split(/\n+/).map((line) => line.trim()).filter(Boolean).forEach((line) => {
+        const phaseOnly = /^(警上|第[一二三四五六七]天白天)[:：]?$/.exec(line);
+        if (phaseOnly) {
+          currentPhase = phaseFromLine(line, currentPhase);
+          ensurePhaseUnlocked(currentPhase);
+          return;
+        }
+        currentPhase = phaseFromLine(line, currentPhase);
+        ensurePhaseUnlocked(currentPhase);
+
+        if (line.includes("<-") || /票型|弃票|警长/.test(line)) {
+          const voteCount = parseVoteText(line, normalizeVotePhase(currentPhase));
+          result.votes += voteCount;
+          if (voteCount) return;
+        }
+
+        const doubleFall = line.match(/^([1-9]|1[0-5])\s*[-—]\s*([1-9]|1[0-5])\s*双倒/);
+        if (doubleFall) {
+          [Number(doubleFall[1]), Number(doubleFall[2])].forEach((seat) => {
+            const player = playerBySeat(seat);
+            if (player) setPlayerStatusAtPhase(player, currentPhase, "刀死");
+          });
+          addEvent({ type: "状态", actor: doubleFall[1], target: doubleFall[2], text: `${doubleFall[1]}号、${doubleFall[2]}号在${currentPhase}双倒`, silent: true });
+          result.statuses += 2;
+          return;
+        }
+
+        const legacy = line.match(/^([1-9]|1[0-5])\s*遗言[:：]?\s*(.*)$/);
+        if (legacy) {
+          saveCanvasNoteSilently(Number(legacy[1]), currentPhase, `遗言：${legacy[2]}`);
+          result.records += 1;
+          return;
+        }
+
+        const statusOnly = line.match(/^([1-9]|1[0-5])\s*(出局|放逐|刀死|毒死|枪带|自爆)$/);
+        if (statusOnly) {
+          const player = playerBySeat(Number(statusOnly[1]));
+          if (player) setPlayerStatusAtPhase(player, currentPhase, statusOnly[2]);
+          result.statuses += 1;
+          return;
+        }
+
+        const speech = line.match(/^([1-9]|1[0-5])\s*[:：]\s*(.*)$/);
+        if (speech) {
+          const seat = Number(speech[1]);
+          const content = speech[2].trim();
+          if (currentPhase === "警上") {
+            const player = playerBySeat(seat);
+            if (player) player.onPolice = true;
+          }
+          if (content) {
+            saveCanvasNoteSilently(seat, currentPhase, content);
+            result.records += 1;
+          }
+        }
+      });
+      state.policeSeats = normalizeSeatList(activePlayers().filter((player) => player.onPolice).map((player) => player.seat), state.seatCount);
+      return result;
+    }
+
+    function saveCanvasNoteSilently(seat, phase, text) {
+      const player = playerBySeat(seat);
+      if (!player || !String(text || "").trim()) return;
+      const safePhase = normalizePhase(phase);
+      const existing = state.notes.find((note) => note.source === "canvas" && note.seat === seat && note.phase === safePhase);
+      const noteId = existing?.id || Date.now() + Math.floor(Math.random() * 1000);
+      const eventId = existing?.eventId || noteId + 1;
+      const value = String(text || "").trim();
+      const summary = `${playerLabel(seat)}：${safePhase}；${value}`;
+      const note = {
+        id: noteId,
+        eventId,
+        ts: noteId,
+        source: "canvas",
+        phase: safePhase,
+        seat,
+        target: "",
+        tags: ["阶段记录", ...tagsFromPerspectiveText(value)],
+        text: value,
+        summary
+      };
+      if (existing) Object.assign(existing, note);
+      else state.notes.push(note);
+      applyTextInsightsToPlayer(seat, safePhase, value);
+      upsertEventForNote(note, summary);
+    }
+
+    function parseSeatList(value) {
+      const text = String(value || "").replace(/[，。；;、]/g, " ");
+      if (/\s/.test(text.trim())) {
+        return normalizeSeatList((text.match(/1[0-5]|[1-9]/g) || []).map(Number), state.seatCount);
+      }
+      const seats = [];
+      for (let index = 0; index < text.length; index += 1) {
+        const pair = text.slice(index, index + 2);
+        if (/^1[0-2]$/.test(pair) || (/^1[3-5]$/.test(pair) && index + 2 >= text.length)) {
+          seats.push(Number(pair));
+          index += 1;
+        } else if (/[1-9]/.test(text[index])) {
+          seats.push(Number(text[index]));
+        }
+      }
+      return normalizeSeatList(seats, state.seatCount);
+    }
+
+    function parseVoteTextInput() {
+      const input = document.querySelector("#voteTextInput");
+      const count = parseVoteText(input?.value || "", normalizeVotePhase(currentCanvasPhase()));
+      if (!count) {
+        showToast("没有识别到票型，可用 4<- 1 3 10 13 这种格式");
+        return;
+      }
+      if (input) input.value = "";
+      saveState();
+      renderAll();
+      showToast(`已识别${count}条票型`);
+    }
+
+    function startVoteSpeechInput() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const input = document.querySelector("#voteTextInput");
+      if (!SpeechRecognition || !input) {
+        showToast("当前浏览器不支持网页语音识别，可用手机键盘自带听写");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = "zh-CN";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.addEventListener("result", (event) => {
+        const text = event.results?.[0]?.[0]?.transcript || "";
+        input.value = `${input.value}${input.value ? "\n" : ""}${text}`;
+        showToast("语音已写入票型输入框");
+      });
+      recognition.addEventListener("error", () => showToast("语音识别失败，可改用键盘听写"));
+      recognition.start();
+      showToast("开始听票型");
+    }
+
+    function parseVoteText(text, fallbackPhase = "警徽") {
+      let count = 0;
+      let currentPhase = normalizeVotePhase(fallbackPhase);
+      String(text || "").split(/\n+/).map((line) => line.trim()).filter(Boolean).forEach((line) => {
+        currentPhase = normalizeVotePhase(phaseFromLine(line, currentPhase));
+        const voteMatch = line.match(/([1-9]|1[0-5])\s*<-\s*([0-9\s、,，/\\-]+)/);
+        if (voteMatch) {
+          const target = Number(voteMatch[1]);
+          const voters = parseSeatList(voteMatch[2]);
+          if (target && voters.length) {
+            addVoteRecord({
+              phase: currentPhase,
+              round: currentPhase === "警徽" ? "警徽票" : `${currentPhase}票型`,
+              target,
+              voters
+            });
+            count += 1;
+          }
+        }
+        const sheriffMatch = line.match(/([1-9]|1[0-5])\s*警长/);
+        if (sheriffMatch) {
+          const sheriffSeat = Number(sheriffMatch[1]);
+          state.players.forEach((player) => { player.sheriff = player.seat === sheriffSeat; });
+        }
+        const outMatch = line.match(/([1-9]|1[0-5])\s*(出局|放逐|出)$/);
+        if (outMatch) {
+          const player = playerBySeat(Number(outMatch[1]));
+          if (player) setPlayerStatusAtPhase(player, currentPhase === "警徽" ? "警上" : currentPhase, "放逐");
+        }
+      });
+      return count;
+    }
+
+    function addVoteRecord({ phase, round, target, voters }) {
+      const voteId = Date.now() + Math.floor(Math.random() * 1000);
+      const eventId = voteId + 1;
+      const safeVote = {
+        id: voteId,
+        eventId,
+        ts: voteId,
+        phase: normalizeVotePhase(phase),
+        round,
+        target: Number(target),
+        voters: normalizeSeatList(voters, state.seatCount)
+      };
+      state.votes.push(safeVote);
+      state.events.push({
+        id: eventId,
+        voteId,
+        ts: voteId,
+        phase: safeVote.phase,
+        type: "票型",
+        actor: "",
+        target: safeVote.target,
+        text: `${safeVote.round}：${safeVote.voters.map(playerLabel).join("、")} 投给 ${playerLabel(safeVote.target)}`
+      });
+    }
+
     function defaultVotePhase() {
       if (state.phase === "警上") return "警徽";
       if (dayPhases.includes(state.phase)) return state.phase;
@@ -3426,12 +4246,15 @@
       targetInput.innerHTML = `<option value="">请选择</option>${activePlayers().map((player) => `<option value="${player.seat}">${player.seat}号 ${escapeHtml(player.name)}</option>`).join("")}`;
       if (activePlayers().some((player) => String(player.seat) === previousTarget)) targetInput.value = previousTarget;
 
-      voterGrid.innerHTML = activePlayers().map((player) => `
+      const isSheriffVote = normalizeVotePhase(phaseInput.value || previousPhase) === "警徽";
+      const eligibleVoters = activePlayers().filter((player) => !isSheriffVote || !player.onPolice);
+      selectedVoters = new Set([...selectedVoters].filter((seat) => eligibleVoters.some((player) => player.seat === seat)));
+      voterGrid.innerHTML = eligibleVoters.map((player) => `
         <label class="voter">
           <input type="checkbox" value="${player.seat}" ${selectedVoters.has(player.seat) ? "checked" : ""}>
           <span>${player.seat}号 ${escapeHtml(player.name)}</span>
         </label>
-      `).join("");
+      `).join("") || `<div class="empty">警徽票只允许未上警玩家投票。先在实战记录页标记上警名单。</div>`;
 
       voterGrid.querySelectorAll("input").forEach((checkbox) => {
         checkbox.addEventListener("change", () => {
@@ -3754,12 +4577,19 @@
       state.phase = normalizePhase(state.phase);
       state.selfSeat = normalizeOptionalSeat(state.selfSeat, state.seatCount);
       state.players = normalizePlayers(state.players, state.seatCount);
+      state.policeSeats = normalizeSeatList(state.policeSeats || state.players.filter((player) => player.onPolice).map((player) => player.seat), state.seatCount);
+      state.players.forEach((player) => {
+        player.onPolice = state.policeSeats.includes(player.seat) || Boolean(player.onPolice);
+      });
+      state.policeSeats = normalizeSeatList(state.players.filter((player) => player.onPolice).map((player) => player.seat), state.seatCount);
       state.roleConfig = normalizeRoleConfig(state.roleConfig, state.seatCount);
       normalizePlayerRolesForBoard(state);
       state.notes = normalizeNotes(state.notes);
       state.perspectiveNotes = normalizePerspectiveNotes(state.perspectiveNotes, state.seatCount);
       state.votes = normalizeVotes(state.votes);
       state.events = normalizeEvents(state.events);
+      state.activePhases = normalizeActivePhases(state.activePhases || ["警上"], state);
+      state.phase = currentCanvasPhase();
       renderLabels();
       renderBoard();
       renderQuickPanel();
@@ -3775,13 +4605,17 @@
 
     function applyExampleGame() {
       state = defaultState();
-      state.title = "12人机械狼示例局";
-      state.result = "狼人胜";
-      state.preset = "mechanical-psychic";
-      state.selfSeat = 4;
+      state.title = "13人机械通灵实战记录";
+      state.result = "复盘中";
+      state.seatCount = 13;
+      state.preset = "custom";
+      state.selfSeat = 9;
+      state.selectedSeat = 9;
+      state.activePhases = ["警上", "第一天白天", "第二天白天"];
       state.roleConfig = [
-        { faction: "wolf", role: "狼", count: 3 },
         { faction: "wolf", role: "机械狼", count: 1 },
+        { faction: "wolf", role: "狼", count: 3 },
+        { faction: "god", role: "预言家", count: 1 },
         { faction: "god", role: "女巫", count: 1 },
         { faction: "god", role: "猎人", count: 1 },
         { faction: "god", role: "守卫", count: 1 },
@@ -3789,64 +4623,48 @@
         { faction: "civil", role: "民", count: 4 }
       ];
       state.ruleNotes = {
-        god: "示例：女巫、猎人、守卫、通灵师按线下约定执行。",
-        wolf: "示例：机械狼学习1号猎人；狼队可自爆拼刀。",
-        third: "本局无三方。"
+        god: "机械通灵实战：预言家、女巫、猎人、守卫、通灵师按线下规则执行。",
+        wolf: "机械狼与普通狼人共同构成狼队；机械狼学习规则按本局约定执行。",
+        third: "本局暂无三方记录。"
       };
-      state.players = createPlayers(12).map((player, index) => {
-        const data = examplePlayers[index];
-        return {
-          ...player,
-          name: data[0],
-          claimRole: data[1],
-          claimRoles: data[1] === "未标" ? [] : [data[1]],
-          trueRole: data[2],
-          read: data[3]
-        };
-      });
-      state.players[4].sheriff = true;
-      state.players[1].status = "放逐";
-      state.players[0].status = "刀死";
-      state.players[6].status = "枪带";
-      state.players[7].status = "自爆";
-      state.players[3].status = "刀死";
-      state.players[5].status = "自爆";
-      state.players[4].status = "刀死";
-      state.players[1].phaseStatuses = { "第一天白天": "放逐" };
-      state.players[0].phaseStatuses = { "第二天白天": "刀死" };
-      state.players[6].phaseStatuses = { "第二天白天": "枪带" };
-      state.players[7].phaseStatuses = { "第二天白天": "自爆" };
-      state.players[3].phaseStatuses = { "第三天白天": "刀死" };
-      state.players[5].phaseStatuses = { "第三天白天": "自爆" };
-      state.players[4].phaseStatuses = { "第四天白天": "刀死" };
-      const seed = Date.now();
-      state.notes = [
-        noteSeed(seed + 1, 10, "警上", ["过麦"], "", "快速过麦到11号"),
-        noteSeed(seed + 2, 11, "警上", ["跳预", "发查杀", "炸身份"], 2, "简短发言，炸身份，给2发杀"),
-        noteSeed(seed + 3, 1, "警上", ["站边"], 11, "情绪站11"),
-        noteSeed(seed + 4, 2, "警上", ["认民"], "", "警上认民"),
-        noteSeed(seed + 5, 4, "警上", ["认好"], 2, "认2好"),
-        noteSeed(seed + 6, 5, "警上", ["跳预", "发金水"], 6, "给6发金"),
-        noteSeed(seed + 7, 6, "警上", ["暗跳", "认5", "打人"], 7, "暗跳预认5，打后置位7开对跳"),
-        noteSeed(seed + 8, 7, "警上", ["认民", "带跳"], 11, "说11是通，自己是民，让11dd带跳"),
-        noteSeed(seed + 9, 8, "警上", ["点评", "站边"], 5, "警上点评站5"),
-        noteSeed(seed + 10, 5, "第一天白天", ["归票", "放逐"], 2, "5外楼2出局"),
-        noteSeed(seed + 11, 5, "第二天白天", ["聊爆", "认狼"], "", "抢先发言认双刀大哥，让狼自曝拼刀")
-      ];
-      state.events = [
-        ...state.notes.map((note) => ({ id: note.id + 100, ts: note.ts, phase: note.phase, type: "发言", actor: note.seat, target: note.target, text: note.summary })),
-        { id: seed + 20, ts: seed + 20, phase: "警徽", type: "警长", actor: 5, target: "", text: "1、4、5、6、11争警徽；3票11，9票5；11退水，5号十叶当选" },
-        { id: seed + 21, ts: seed + 21, phase: "第一天白天", type: "放逐", actor: 2, target: "", text: "5号外楼归票2号，2号出局" },
-        { id: seed + 22, ts: seed + 22, phase: "第二天白天", type: "刀死", actor: 1, target: 7, text: "狼人刀1号，1号猎人带走7号" },
-        { id: seed + 23, ts: seed + 23, phase: "第二天白天", type: "自爆", actor: 8, target: "", text: "8号自爆，狼人继续拼刀" },
-        { id: seed + 24, ts: seed + 24, phase: "第三天白天", type: "刀死", actor: 4, target: "", text: "狼人刀4号" },
-        { id: seed + 25, ts: seed + 25, phase: "第三天白天", type: "自爆", actor: 6, target: "", text: "6号自爆" },
-        { id: seed + 26, ts: seed + 26, phase: "第四天白天", type: "刀死", actor: 5, target: "", text: "狼人刀5号，狼人胜" }
-      ];
-      state.votes = [
-        { id: seed + 30, ts: seed + 30, phase: "警徽", round: "警徽票", target: 11, voters: [1, 4, 11] },
-        { id: seed + 31, ts: seed + 31, phase: "警徽", round: "警徽票", target: 5, voters: [2, 3, 5, 6, 7, 8, 9, 10, 12] }
-      ];
+      state.players = createPlayers(13);
+      state.policeSeats = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      state.players.forEach((player) => { player.onPolice = state.policeSeats.includes(player.seat); });
+      const recordText = `警上：
+1: 跳预，4查杀，59验，听13偏好，11不知道。
+2: 认为1一般，再听听
+3: 认为11不错，1一般，觉得要验警下，13偏上。
+4: 跳预，12平民，69验，认为5偏好，7未知，认3不好，3对话11太多，递话。
+5: 认民，认4原地起跳，站1
+6: 认1。
+7: 站1，认为4视角缺失1为大哥，8狼
+10: 通灵，验11金水，胡言乱语。
+第一天白天
+2：听6/10，站1
+3: 踩2，站1，出4
+4: 1-3-9 三狼
+5: 警下认4还可以，打2，打10不好。12压手就大概率民，4/9/10？
+6: 2/4打6，6不站4，认12民，6认强神。
+7: 好人，4预 1/8/10
+8: 12也不是站1，警下站1，认为7不好，认为12神？让守卫盾12/6/1
+10: 237不错，4569狼。认1预，出4。
+11: 认4
+12: 认民，站4，听13偏好。
+13: 站1，4 10 8？2？
+1: 出4，2481012-11，10/12开大哥 验8
+4<- 131013
+1<- 24811
+4出局
+4遗言：131013，6禁言。12机械平民
+第二天白天
+2-6 双倒
+7：跳盾，盾了2，2死了，2狼，24狼，1预，外置位
+5: 12/13/3 3狼
+3: 空守 1/2 ，6女巫，出7. 12/13再找。
+13: 认1，出7`;
+      parseBulkRecordText(recordText);
+      state.players.forEach((player) => { player.sheriff = player.seat === 1; });
+      state.events.push({ id: Date.now() + 800, ts: Date.now() + 800, phase: "警徽", type: "警长", actor: 1, target: "", text: "警徽票：12弃票，8票给1，1号当选警长" });
       saveState();
       renderAll();
     }
@@ -3887,6 +4705,27 @@
       document.querySelectorAll("[data-save-current]").forEach((button) => {
         button.addEventListener("click", saveCurrentGameToHistory);
       });
+      document.querySelector("#canvasSelfSeatSelect")?.addEventListener("change", (event) => {
+        state.selfSeat = normalizeOptionalSeat(event.target.value, state.seatCount);
+        saveState();
+        renderAll();
+        showToast(state.selfSeat ? `已设置本人为${playerLabel(state.selfSeat)}` : "已清空本人号码");
+      });
+      document.querySelector("#advancePhaseBtn")?.addEventListener("click", advanceCanvasPhase);
+      document.querySelector("#clearPoliceBtn")?.addEventListener("click", () => {
+        state.policeSeats = [];
+        state.players.forEach((player) => { player.onPolice = false; });
+        saveState();
+        renderAll();
+        showToast("已清空上警名单");
+      });
+      document.querySelector("#parseBulkRecordBtn")?.addEventListener("click", parseBulkRecordInput);
+      document.querySelector("#clearBulkRecordBtn")?.addEventListener("click", () => {
+        const input = document.querySelector("#bulkRecordInput");
+        if (input) input.value = "";
+      });
+      document.querySelector("#parseVoteTextBtn")?.addEventListener("click", parseVoteTextInput);
+      document.querySelector("#voiceVoteBtn")?.addEventListener("click", startVoteSpeechInput);
       document.querySelector("#exportGameBtn").addEventListener("click", exportGame);
       document.querySelector("#importGameBtn").addEventListener("click", () => document.querySelector("#importGameInput").click());
       document.querySelector("#importGameInput").addEventListener("change", (event) => {
@@ -3908,6 +4747,8 @@
         state.seatCount = normalizeSeatCount(event.target.value);
         state.players = normalizePlayers(state.players, state.seatCount);
         state.selectedSeat = Math.min(state.selectedSeat, state.seatCount);
+        state.selfSeat = normalizeOptionalSeat(state.selfSeat, state.seatCount);
+        state.policeSeats = normalizeSeatList(state.policeSeats, state.seatCount);
         state.roleConfig = defaultRoleConfig(state.seatCount);
         saveState();
         renderAll();
@@ -3949,6 +4790,7 @@
       });
       document.querySelector("#votePhaseInput").addEventListener("change", (event) => {
         document.querySelector("#voteRoundInput").placeholder = voteRoundPlaceholder(event.target.value);
+        renderVoteControls();
       });
       document.querySelector("#clearVotersBtn").addEventListener("click", () => {
         selectedVoters = new Set();
